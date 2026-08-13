@@ -1,0 +1,23 @@
+# Julia coverage and allocation tracking output
+*.cov
+*.mem
+*.jl.*.cov
+*.jl.*.mem
+lcov.info
+coverage/
+
+# Resolved dependency versions are not tracked for a library package
+Manifest.toml
+
+# Julia build and doc output
+deps/build.log
+deps/deps.jl
+docs/build/
+docs/site/
+*.jl.tmp
+
+# Editor and OS noise
+*~
+\#*\#
+.\#*
+.DS_Store
