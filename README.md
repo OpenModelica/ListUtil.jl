@@ -1,5 +1,5 @@
-[![CI](https://github.com/JKRT/ListUtil.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JKRT/ListUtil.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/JKRT/ListUtil.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JKRT/ListUtil.jl)
+[![CI](https://github.com/OpenModelica/ListUtil.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenModelica/ListUtil.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/OpenModelica/ListUtil.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenModelica/ListUtil.jl)
 [![License: OSMC-PL](https://img.shields.io/badge/license-OSMC--PL-lightgrey.svg)](LICENSE.md)
 
 # ListUtil.jl
@@ -8,10 +8,10 @@ List utility helpers for the Julia port of the OpenModelica compiler.
 A Julia translation of the MetaModelica `ListUtil` module: `map`, `fold`,
 `filter`, `filterOnTrue`, `position`, `flatten`, and more
 operations on the immutable cons-list type `List{T}` provided by
-[`MetaModelica.jl`](https://github.com/JKRT/MetaModelica.jl) and
-[`ImmutableList.jl`](https://github.com/JKRT/ImmutableList.jl).
+[`MetaModelica.jl`](https://github.com/OpenModelica/MetaModelica.jl) and
+[`ImmutableList.jl`](https://github.com/OpenModelica/ImmutableList.jl).
 
-This package is part of the [OM.jl](https://github.com/JKRT/OM.jl) suite.
+This package is part of the [OM.jl](https://github.com/OpenModelica/OM.jl) suite.
 
 ## Installation
 
