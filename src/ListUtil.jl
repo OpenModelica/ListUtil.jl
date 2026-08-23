@@ -5555,7 +5555,7 @@ The output is a 2-dim list with lengths (len1*len2*...*lenN)) and N.
 
 This function screams WARNING I USE COMBINATORIAL EXPLOSION.
 So there are flags that limit the size of the set it works on. =#
-function allCombinations(lst::List, maxTotalSize::Option{ModelicaInteger}, info::SourceInfo)
+Base.@nospecializeinfer function allCombinations(@nospecialize(lst::List), maxTotalSize::Option{ModelicaInteger}, info::SourceInfo)
   local out::List
 
   out = begin
@@ -5584,7 +5584,7 @@ end
 The output is a 2-dim list with lengths (len1*len2*...*lenN)) and N.
 
 This function screams WARNING I USE COMBINATORIAL EXPLOSION. =#
-function allCombinations2(ilst::List)
+Base.@nospecializeinfer function allCombinations2(@nospecialize(ilst::List))
   local out::List
 
   out = begin
@@ -5605,14 +5605,14 @@ function allCombinations2(ilst::List)
   out
 end
 
-function allCombinations3(ilst1::List{T}, ilst2::List, iacc::List)  where {T}
-  local out::List{List{T}}
+Base.@nospecializeinfer function allCombinations3(@nospecialize(ilst1::List), @nospecialize(ilst2::List), @nospecialize(iacc::List))
+  local out::List
 
   out = begin
-    local x::T
-    local lst1::List{T}
-    local lst2::List{List{T}}
-    local acc::List{List{T}}
+    local x
+    local lst1::List
+    local lst2::List
+    local acc::List
     @match (ilst1, ilst2, iacc) begin
       ( nil(), _, acc)  => begin
         listReverse(acc)
@@ -5628,13 +5628,13 @@ function allCombinations3(ilst1::List{T}, ilst2::List, iacc::List)  where {T}
   out
 end
 
-function allCombinations4(x::T, ilst::List, iacc::List)  where {T}
-  local out::List{List{T}}
+Base.@nospecializeinfer function allCombinations4(@nospecialize(x), @nospecialize(ilst::List), @nospecialize(iacc::List))
+  local out::List
 
   out = begin
-    local l::List{T}
-    local lst::List{List{T}}
-    local acc::List{List{T}}
+    local l::List
+    local lst::List
+    local acc::List
     @match (x, ilst, iacc) begin
       (_,  nil(), acc)  => begin
         _cons(list(x), acc)
