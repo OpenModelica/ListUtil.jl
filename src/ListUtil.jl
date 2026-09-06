@@ -1425,11 +1425,24 @@ function transposeList(inList::List)
 end
 
 #= List-of-lists widens to Array{List}: rows mutate between Cons and Nil in place. =#
-function listArrayReverse(inLst::List)
+# The element type comes from the first cell: a list of lists needs a
+# `List` array (an empty inner list is not a Cons), anything else the
+# concrete element type.
+listArrayReverse(inLst::Nil) = listArray(inLst)
+function listArrayReverse(inLst::Cons{T}) where {T <: List}
   local len::ModelicaInteger = listLength(inLst)
   local outArr = Array{List}(undef, len)
   for e in inLst
     outArr[len] = e
+    len = len - 1
+  end
+  outArr
+end
+function listArrayReverse(inLst::Cons{T}) where {T}
+  local len::ModelicaInteger = listLength(inLst)
+  local outArr = arrayCreateNoInit(len, inLst.head)
+  for e in inLst
+    arrayUpdateNoBoundsChecking(outArr, len, e)
     len = len - 1
   end
   outArr
