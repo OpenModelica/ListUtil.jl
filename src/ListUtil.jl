@@ -385,12 +385,12 @@ end
 
 """ Appends a list to the last list in a list of lists. """
 function appendLastList(inListList::List, inList::List)
-  local outListList::List{List}
+  local outListList::List
 
   outListList = begin
     local l::List
-    local ll::List{List}
-    local ol::List{List} = nil
+    local ll::List
+    local ol::List = nil
     @match (inListList, inList) begin
       ( nil(), _)  => begin
         list(inList)
@@ -1242,7 +1242,7 @@ end
 Example: splitEqualParts({1, 2, 3, 4, 5, 6, 7, 8}, 4) =>
 {{1, 2}, {3, 4}, {5, 6}, {7, 8}} =#
 function splitEqualParts(inList::List, inParts::ModelicaInteger)
-  local outParts::List{List}
+  local outParts::List
 
   local length::ModelicaInteger
 
@@ -1287,7 +1287,7 @@ julia> partition(list(1, 2, 3, 4, 5), 2) => {{1, 2}, {3, 4}, {5}}
 ```
 """
 function partition(inList::List, inPartitionLength::ModelicaInteger)
-  local outPartitions::List{List} = nil
+  local outPartitions::List = nil
 
   local lst::List = inList
   local part::List
@@ -1320,7 +1320,7 @@ The number of partitions is the same as partition(), but chosen to be
 as balanced in length as possible.
 =#
 function balancedPartition(lst::List, maxLength::ModelicaInteger)
-  local outPartitions::List{List}
+  local outPartitions::List
 
   local length::ModelicaInteger
   local n::ModelicaInteger
@@ -5162,11 +5162,11 @@ end
   The first and last arguments should be a list of lists.
 """
 function combination_tail(inElements::List, inCombination::List, inAccumElems::List)
-  local outElements::List{List}
+  local outElements::List
   outElements = begin
     local head::List
-    local rest::List{List}
-    local acc::List{List}
+    local rest::List
+    local acc::List
     @match inElements begin
       head <| rest  => begin
         acc = inAccumElems
@@ -5204,7 +5204,7 @@ function combinationMap_tail(inElements::List, inMapFunc::F, inCombination::List
 
   outElements = begin
     local head::List
-    local rest::List{List}
+    local rest::List
     local acc::List
     @match inElements begin
       head <| rest  => begin
@@ -5245,7 +5245,7 @@ function combinationMap1_tail(inElements::List, inMapFunc::F, inArg::ArgT1, inCo
 
   outElements = begin
     local head::List
-    local rest::List{List}
+    local rest::List
     local acc::List
     @match inElements begin
       head <| rest  => begin
