@@ -61,7 +61,7 @@ end
 #= Returns a list of n element.
 Example: fill(2, 3) => {2, 2, 2} =#
 function fill(inElement::T, inCount::ModelicaInteger)  where {T}
-  local outList::List{T} = nil
+  local outList::List = nil
   local i::ModelicaInteger = 0
 
   while i < inCount
@@ -74,7 +74,7 @@ end
 #= Returns a list of n integers from 1 to inStop.
 Example: listIntRange(3) => {1,2,3} =#
 function intRange(inStop::ModelicaInteger) ::List{ModelicaInteger}
-  local outRange::List{ModelicaInteger} = nil
+  local outRange::List = nil
 
   local i::ModelicaInteger = inStop
 
@@ -88,7 +88,7 @@ end
 #= Returns a list of integers from inStart to inStop.
 Example listIntRange2(3,5) => {3,4,5} =#
 function intRange2(inStart::ModelicaInteger, inStop::ModelicaInteger) ::List{ModelicaInteger}
-  local outRange::List{ModelicaInteger} = nil
+  local outRange::List = nil
 
   local i::ModelicaInteger = inStop
 
@@ -121,11 +121,11 @@ end
 #= Returns an option of the element in a list if the list contains exactly one
 element, NONE() if the list is empty and fails if the list contains more than
 one element. =#
-function toOption(inList::List{T})  where {T}
-  local outOption::Option{T}
+function toOption(inList::List)
+  local outOption::Option
 
   outOption = begin
-    local e::T
+    local e
     @match inList begin
       nil()  => begin
         NONE()
@@ -160,21 +160,21 @@ function fromOption(inElement::Option{T})  where {T}
 end
 
 """ Fails if the given list is not empty. """
-function assertIsEmpty(inList::List{T})  where {T}
+function assertIsEmpty(inList::List)
   @match nil = inList
 end
 
 #= Checks if two lists are equal. If inEqualLength is true the lists are assumed
 to be of equal length, and if it is false they can be of different lengths (in
 which case only the overlapping parts of the lists are checked). =#
-function isEqual(inList1::List{T}, inList2::List{T}, inEqualLength::Bool)  where {T}
+function isEqual(inList1::List, inList2::List, inEqualLength::Bool)
   local outIsEqual::Bool
 
   outIsEqual = begin
-    local e1::T
-    local e2::T
-    local rest1::List{T}
-    local rest2::List{T}
+    local e1
+    local e2
+    local rest1::List
+    local rest2::List
     @match (inList1, inList2, inEqualLength) begin
       (e1 <| rest1, e2 <| rest2, _) where (valueEq(e1, e2))  => begin
         isEqual(rest1, rest2, inEqualLength)
@@ -202,14 +202,14 @@ end
 
 #= Takes two lists and an equality function, and returns whether the lists are
 equal or not. =#
-function isEqualOnTrue(inList1::List{T1}, inList2::List{T2}, inCompFunc::F) where {T1, T2, F<:Function}
+function isEqualOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
   local outIsEqual::Bool
 
   outIsEqual = begin
-    local e1::T1
-    local e2::T2
-    local rest1::List{T1}
-    local rest2::List{T2}
+    local e1
+    local e2
+    local rest1::List
+    local rest2::List
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2) where (inCompFunc(e1, e2))  => begin
         isEqualOnTrue(rest1, rest2, inCompFunc)
@@ -230,14 +230,14 @@ end
 #= Checks if the first list is a prefix of the second list, i.e. that all
 elements in the first list is equal to the corresponding elements in the
 second list. =#
-function isPrefixOnTrue(inList1::List{T1}, inList2::List{T2}, inCompFunc::F) where {T1, T2, F<:Function}
+function isPrefixOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
   local outIsPrefix::Bool
 
   outIsPrefix = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2) where (inCompFunc(e1, e2))  => begin
         isPrefixOnTrue(rest1, rest2, inCompFunc)
@@ -307,7 +307,7 @@ function consOption(inElement::Option{T}, inList::List{T})  where {T}
 end
 
 """ Adds an element to one of two lists, depending on the given boolean value. """
-function consOnBool(inValue::Bool, inElement::T, trueList::List{T}, falseList::List{T})  where {T}
+function consOnBool(inValue::Bool, inElement::T, trueList::List, falseList::List)  where {T}
 
 
 
@@ -347,8 +347,8 @@ function append_reverse(inList1::List, inList2::List)
 end
 
 """ Appends the elements from list2 in reverse order to list1. """
-function append_reverser(inList1::List{T}, inList2::List{T})  where {T}
-  local outList::List{T} = inList1
+function append_reverser(inList1::List, inList2::List)
+  local outList::List = inList1
 
   #=  Do not optimize the case listEmpty(inList2) and listLength(inList1)==1
   =#
@@ -363,8 +363,8 @@ function append_reverser(inList1::List{T}, inList2::List{T})  where {T}
 end
 
 """ Appends two lists in reverse order compared to listAppend. """
-function appendr(inList1::List{T}, inList2::List{T})  where {T}
-  local outList::List{T}
+function appendr(inList1::List, inList2::List)
+  local outList::List
 
   outList = listAppend(inList2, inList1)
   outList
@@ -384,13 +384,13 @@ function appendLastList(inListList, inList::Nil)
 end
 
 """ Appends a list to the last list in a list of lists. """
-function appendLastList(inListList::List, inList::List{T})  where {T}
-  local outListList::List{List{T}}
+function appendLastList(inListList::List, inList::List)
+  local outListList::List{List}
 
   outListList = begin
-    local l::List{T}
-    local ll::List{List{T}}
-    local ol::List{List{T}} = nil
+    local l::List
+    local ll::List{List}
+    local ol::List{List} = nil
     @match (inListList, inList) begin
       ( nil(), _)  => begin
         list(inList)
@@ -430,8 +430,8 @@ end
 
 #= Inserts an sorted list into another sorted list. O(n)
 example: insertListSorted({1,2,4,5},{3,4,8},intGt) => {1,2,3,4,4,5,8} =#
-function insertListSorted(inList::List{T}, inList2::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outList::List{T}
+function insertListSorted(inList::List, inList2::List, inCompFunc::F) where {F<:Function}
+  local outList::List
 
   outList = listReverseInPlace(insertListSorted1(inList, inList2, inCompFunc, nil))
   outList
@@ -439,14 +439,14 @@ end
 
 #= Iterate over the first given list and add it to the result list if the comparison function with the head of the second list returns true.
 The result is a sorted list in reverse order. =#
-function insertListSorted1(inList::List{T}, inList2::List{T}, inCompFunc::F, inResultList::List{T}) where {T, F<:Function}
-  local outResultList::List{T}
-  local listRest::List{T}
-  local listRest2::List{T}
-  local tmpResultList::List{T}
-  local listHead::T
-  local listHead2::T
-  local elem::T
+function insertListSorted1(inList::List, inList2::List, inCompFunc::F, inResultList::List) where {F<:Function}
+  local outResultList::List
+  local listRest::List
+  local listRest2::List
+  local tmpResultList::List
+  local listHead
+  local listHead2
+  local elem
 
   outResultList = begin
     @match (inList, inList2, inCompFunc, inResultList) begin
@@ -493,11 +493,11 @@ function set(inList::List{T}, inN::ModelicaInteger, inElement::T)  where {T}
 end
 
 """ Returns the first element of a list. Fails if the list is empty. """
-function first(inList::List{T})  where {T}
-  local out::T
+function first(inList::List)
+  local out
 
   out = begin
-    local e::T
+    local e
     @match inList begin
       e <| _  => begin
         e
@@ -509,11 +509,11 @@ end
 
 #= Returns the first element of a list as a list, or an empty list if the given
 list is empty. =#
-function firstOrEmpty(inList::List{T})  where {T}
-  local outList::List{T}
+function firstOrEmpty(inList::List)
+  local outList::List
 
   outList = begin
-    local e::T
+    local e
     @match inList begin
       e <| _  => begin
         list(e)
@@ -528,18 +528,18 @@ function firstOrEmpty(inList::List{T})  where {T}
 end
 
 """ Returns the second element of a list. Fails if the list is empty. """
-function second(inList::List{T})  where {T}
-  local outSecond::T
+function second(inList::List)
+  local outSecond
 
   outSecond = listGet(inList, 2)
   outSecond
 end
 
 """ Returns the last element of a list. Fails if the list is empty. """
-function last(inList::List{T})  where {T}
-  local outLast::T
+function last(inList::List)
+  local outLast
 
-  local rest::List{T}
+  local rest::List
 
   @match _cons(outLast, rest) = inList
   for e in rest
@@ -549,11 +549,11 @@ function last(inList::List{T})  where {T}
 end
 
 """ Returns the last cons-cell of a list. Fails if the list is empty. Also returns the list length. """
-function lastElement(inList::List{T})  where {T}
+function lastElement(inList::List)
   local listLength::ModelicaInteger = 0
-  local lst::List{T}
+  local lst::List
 
-  local rest::List{T} = inList
+  local rest::List = inList
 
   @match false = listEmpty(rest)
   while ! listEmpty(rest)
@@ -586,16 +586,16 @@ end
 
 #= Returns the second last element of a list, or fails if such an element does
 not exist. =#
-function secondLast(inList::List{T})  where {T}
-  local outSecondLast::T
+function secondLast(inList::List)
+  local outSecondLast
 
   @match _cons(_, _cons(outSecondLast, _)) = listReverse(inList)
   outSecondLast
 end
 
 """ Returns the last N elements of a list. """
-function lastN(inList::List{T}, inN::ModelicaInteger)  where {T}
-  local outList::List{T}
+function lastN(inList::List, inN::ModelicaInteger)
+  local outList::List
 
   local len::ModelicaInteger
 
@@ -606,16 +606,16 @@ function lastN(inList::List{T}, inN::ModelicaInteger)  where {T}
 end
 
 """ Returns all elements except for the first in a list. """
-function rest(inList::List{T})  where {T}
-  local outList::List{T}
+function rest(inList::List)
+  local outList::List
 
   @match _cons(_, outList) = inList
   outList
 end
 
 """ Returns all elements except for the first in a list. """
-function restCond(cond::Bool, inList::List{T})  where {T}
-  local outList::List{T}
+function restCond(cond::Bool, inList::List)
+  local outList::List
 
   outList = if cond
     listRest(inList)
@@ -627,8 +627,8 @@ end
 
 #= Returns all elements except for the first in a list, or the empty list of the
 list is empty. =#
-function restOrEmpty(inList::List{T})  where {T}
-  local outList::List{T}
+function restOrEmpty(inList::List)
+  local outList::List
 
   outList = if listEmpty(inList)
     inList
@@ -638,8 +638,8 @@ function restOrEmpty(inList::List{T})  where {T}
   outList
 end
 
-function getIndexFirst(index::ModelicaInteger, inList::List{T})  where {T}
-  local element::T
+function getIndexFirst(index::ModelicaInteger, inList::List)
+  local element
 
   element = listGet(inList, index)
   element
@@ -647,11 +647,11 @@ end
 
 #= Returns the first N elements of a list, or fails if there are not enough
 elements in the list. =#
-function firstN(inList::List{T}, inN::ModelicaInteger)  where {T}
-  local outList::List{T} = nil
+function firstN(inList::List, inN::ModelicaInteger)
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T}
+  local e
+  local rest::List
 
   @match true = inN >= 0
   rest = inList
@@ -665,8 +665,8 @@ end
 
 #= Removes the first element of a list, but returns the empty list if the given
 list is empty. =#
-function stripFirst(inList::List{T})  where {T}
-  local outList::List{T}
+function stripFirst(inList::List)
+  local outList::List
 
   if listEmpty(inList)
     outList = nil
@@ -678,8 +678,8 @@ end
 
 #= Removes the last element of a list. If the list is the empty list, the
 function returns the empty list. =#
-function stripLast(inList::List{T})  where {T}
-  local outList::List{T}
+function stripLast(inList::List)
+  local outList::List
 
   if listEmpty(inList)
     outList = nil
@@ -692,8 +692,8 @@ end
 
 #= Strips the N first elements from a list. Fails if the list contains less than
 N elements, or if N is negative. =#
-function stripN(inList::List{T}, inN::ModelicaInteger)  where {T}
-  local outList::List{T} = inList
+function stripN(inList::List, inN::ModelicaInteger)
+  local outList::List = inList
 
   @match true = inN >= 0
   for i in 1:inN
@@ -778,11 +778,11 @@ end
 
 #= Returns a list of all duplicates in a sorted list, using the given comparison
 function to check for equality. =#
-function sortedDuplicates(inList::List{T}, inCompFunc::F #= Equality comparator =#) where {T, F<:Function}
-  local outDuplicates::List{T} = nil
+function sortedDuplicates(inList::List, inCompFunc::F #= Equality comparator =#) where {F<:Function}
+  local outDuplicates::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest)
     @match _cons(e, rest) = rest
@@ -795,16 +795,16 @@ function sortedDuplicates(inList::List{T}, inCompFunc::F #= Equality comparator 
 end
 
 """ The input is a sorted list. The functions checks if all elements are unique. """
-function sortedListAllUnique(lst::List{T}, compare::F) where {T, F<:Function}
+function sortedListAllUnique(lst::List, compare::F) where {F<:Function}
   local allUnique::Bool = false
 
-  local e::T
-  local rest::List{T} = lst
+  local e
+  local rest::List = lst
 
   while ! listEmpty(rest)
     rest = begin
-      local e1::T
-      local e2::T
+      local e1
+      local e2
       @match rest begin
         _ <|  nil()  => begin
           nil
@@ -825,11 +825,11 @@ end
 
 #= Returns a list of unique elements in a sorted list, using the given
 comparison function to check for equality. =#
-function sortedUnique(inList::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outUniqueElements::List{T} = nil
+function sortedUnique(inList::List, inCompFunc::F) where {F<:Function}
+  local outUniqueElements::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest)
     @match _cons(e, rest) = rest
@@ -843,12 +843,12 @@ end
 
 #= Returns a list with all duplicate elements removed, as well as a list of the
 removed elements, using the given comparison function to check for equality. =#
-function sortedUniqueAndDuplicates(inList::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outDuplicateElements::List{T} = nil
-  local outUniqueElements::List{T} = nil
+function sortedUniqueAndDuplicates(inList::List, inCompFunc::F) where {F<:Function}
+  local outDuplicateElements::List = nil
+  local outUniqueElements::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest)
     @match _cons(e, rest) = rest
@@ -865,11 +865,11 @@ end
 
 #= Returns a list with all duplicate elements removed, as well as a list of the
 removed elements, using the given comparison function to check for equality. =#
-function sortedUniqueOnlyDuplicates(inList::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outDuplicateElements::List{T} = nil
+function sortedUniqueOnlyDuplicates(inList::List, inCompFunc::F) where {F<:Function}
+  local outDuplicateElements::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest)
     @match _cons(e, rest) = rest
@@ -882,16 +882,16 @@ function sortedUniqueOnlyDuplicates(inList::List{T}, inCompFunc::F) where {T, F<
 end
 
 """ Helper function to sort, merges two sorted lists. """
-function merge(inLeft::List{T}, inRight::List{T}, inCompFunc::F, acc::List{T}) where {T, F<:Function}
-  local outList::List{T}
+function merge(inLeft::List, inRight::List, inCompFunc::F, acc::List) where {F<:Function}
+  local outList::List
   outList = begin
     local b::Bool
-    local l::T
-    local r::T
-    local el::T
-    local l_rest::List{T}
-    local r_rest::List{T}
-    local res::List{T}
+    local l
+    local r
+    local el
+    local l_rest::List
+    local r_rest::List
+    local res::List
     #= /* Tail recursive version */ =#
     @match (inLeft, inRight) begin
       (l <| l_rest, r <| r_rest)  => begin
@@ -925,13 +925,13 @@ end
 comparison function that defines a strict weak ordering of the elements, i.e.
 that returns true if the first element should be placed before the second
 element in the sorted list. =#
-function mergeSorted(inList1::List{T}, inList2::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outList::List{T} = nil
+function mergeSorted(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
+  local outList::List = nil
 
-  local l1::List{T}
-  local l2::List{T}
-  local e1::T
-  local e2::T
+  local l1::List
+  local l2::List
+  local e1
+  local e2
 
   l1 = inList1
   l2 = inList2
@@ -964,7 +964,7 @@ end
 #= Provides same functionality as sort, but for integer values between 1
 and N. The complexity in this case is O(n) =#
 function sortIntN(inList::List{<:ModelicaInteger}, inN::ModelicaInteger) ::List{ModelicaInteger}
-  local outSorted::List{ModelicaInteger} = nil
+  local outSorted::List = nil
 
   local a1::Array{Bool}
 
@@ -980,8 +980,8 @@ end
 
 #= Takes a list of elements and returns a list with duplicates removed, so that
 each element in the new list is unique. =#
-function unique(inList::List{T})  where {T}
-  local outList::List{T} = nil
+function unique(inList::List)
+  local outList::List = nil
 
   for e in inList
     if ! listMember(e, outList)
@@ -995,7 +995,7 @@ end
 #= Takes a list of integes and returns a list with duplicates removed, so that
 each element in the new list is unique. O(listLength(inList)) =#
 function uniqueIntN(inList::List, inN::ModelicaInteger) ::List{ModelicaInteger}
-  local outList::List{ModelicaInteger} = nil
+  local outList::List = nil
 
   local arr::Array{Bool}
 
@@ -1050,8 +1050,8 @@ end
 #= Takes a list of elements and a comparison function over two elements of the
 list and returns a list with duplicates removed, so that each element in the
 new list is unique. =#
-function uniqueOnTrue(inList::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outList::List{T} = nil
+function uniqueOnTrue(inList::List, inCompFunc::F) where {F<:Function}
+  local outList::List = nil
 
   for e in inList
     if ! isMemberOnTrue(e, outList, inCompFunc)
@@ -1075,14 +1075,14 @@ end
 
 #= Takes a list and a position, and splits the list at the position given.
 Example: split({1, 2, 5, 7}, 2) => ({1, 2}, {5, 7}) =#
-function split(inList::List{T}, inPosition::ModelicaInteger)  where {T}
-  local outList2::List{T}
-  local outList1::List{T}
+function split(inList::List, inPosition::ModelicaInteger)
+  local outList2::List
+  local outList1::List
 
   local pos::ModelicaInteger
-  local l1::List{T} = nil
-  local l2::List{T} = inList
-  local e::T
+  local l1::List = nil
+  local l2::List = inList
+  local e
 
   @match true = inPosition >= 0
   pos = inPosition
@@ -1099,14 +1099,14 @@ end
 
 #= Takes a list and a position, and splits the list at the position given. The first list is returned in reverse order.
 Example: split({1, 2, 5, 7}, 2) => ({2, 1}, {5, 7}) =#
-function splitr(inList::List{T}, inPosition::ModelicaInteger)  where {T}
-  local outList2::List{T}
-  local outList1::List{T}
+function splitr(inList::List, inPosition::ModelicaInteger)
+  local outList2::List
+  local outList1::List
 
   local pos::ModelicaInteger
-  local l1::List{T} = nil
-  local l2::List{T} = inList
-  local e::T
+  local l1::List = nil
+  local l2::List = inList
+  local e
 
   @match true = inPosition >= 0
   pos = inPosition
@@ -1122,9 +1122,9 @@ function splitr(inList::List{T}, inPosition::ModelicaInteger)  where {T}
 end
 
 """ Splits a list into two sublists depending on predicate function. """
-function splitOnTrue(inList::List{T}, inFunc::F) where {T, F<:Function}
-  local outFalseList::List{T} = nil
-  local outTrueList::List{T} = nil
+function splitOnTrue(inList::List, inFunc::F) where {F<:Function}
+  local outFalseList::List = nil
+  local outTrueList::List = nil
 
   for e in inList
     if inFunc(e)
@@ -1139,9 +1139,9 @@ function splitOnTrue(inList::List{T}, inFunc::F) where {T, F<:Function}
 end
 
 """ Splits a list into two sublists depending on predicate function. """
-function split1OnTrue(inList::List{T}, inFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outFalseList::List{T} = nil
-  local outTrueList::List{T} = nil
+function split1OnTrue(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
+  local outFalseList::List = nil
+  local outTrueList::List = nil
 
   for e in inList
     if inFunc(e, inArg1)
@@ -1156,9 +1156,9 @@ function split1OnTrue(inList::List{T}, inFunc::F, inArg1::ArgT1) where {T, ArgT1
 end
 
 """ Splits a list into two sublists depending on predicate function. """
-function split2OnTrue(inList::List{T}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {T, ArgT1, ArgT2, F<:Function}
-  local outFalseList::List{T} = nil
-  local outTrueList::List{T} = nil
+function split2OnTrue(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
+  local outFalseList::List = nil
+  local outTrueList::List = nil
 
   for e in inList
     if inFunc(e, inArg1, inArg2)
@@ -1174,11 +1174,11 @@ end
 
 #= Splits a list when the given function first finds a matching element.
 Example: splitOnFirstMatch({1, 2, 3, 4, 5}, isThree) => ({1, 2}, {3, 4, 5}) =#
-function splitOnFirstMatch(inList::List{T}, inFunc::F) where {T, F<:Function}
-  local outList2::List{T} = inList
-  local outList1::List{T} = nil
+function splitOnFirstMatch(inList::List, inFunc::F) where {F<:Function}
+  local outList2::List = inList
+  local outList1::List = nil
 
-  local e::T
+  local e
 
   #=  Shuffle elements from outList2 to outList1 until we find a match.
   =#
@@ -1196,9 +1196,9 @@ end
 
 #= Returns the first element of a list and the rest of the list. Fails if the
 list is empty. =#
-function splitFirst(inList::List{T})  where {T}
-  local outRest::List{T}
-  local outFirst::T
+function splitFirst(inList::List)
+  local outRest::List
+  local outFirst
 
   @match _cons(outFirst, outRest) = inList
   (outFirst, outRest)
@@ -1206,13 +1206,13 @@ end
 
 #= Returns the first element of a list as an option, and the rest of the list.
 Returns NONE and {} if the list is empty. =#
-function splitFirstOption(inList::List{T})  where {T}
-  local outRest::List{T}
-  local outFirst::Option{T}
+function splitFirstOption(inList::List)
+  local outRest::List
+  local outFirst::Option
 
   (outFirst, outRest) = begin
-    local el::T
-    local rest::List{T}
+    local el
+    local rest::List
     @match inList begin
       el <| rest  => begin
         (SOME(el), rest)
@@ -1229,9 +1229,9 @@ end
 #= Returns the last element of a list and a list of all previous elements. If
 the list is the empty list, the function fails.
 Example: splitLast({3, 5, 7, 11, 13}) => (13, {3, 5, 7, 11}) =#
-function splitLast(inList::List{T})  where {T}
-  local outRest::List{T}
-  local outLast::T
+function splitLast(inList::List)
+  local outRest::List
+  local outLast
 
   @match _cons(outLast, outRest) = listReverse(inList)
   outRest = listReverseInPlace(outRest)
@@ -1241,8 +1241,8 @@ end
 #= Splits a list into n equally sized parts.
 Example: splitEqualParts({1, 2, 3, 4, 5, 6, 7, 8}, 4) =>
 {{1, 2}, {3, 4}, {5, 6}, {7, 8}} =#
-function splitEqualParts(inList::List{T}, inParts::ModelicaInteger)  where {T}
-  local outParts::List{List{T}}
+function splitEqualParts(inList::List, inParts::ModelicaInteger)
+  local outParts::List{List}
 
   local length::ModelicaInteger
 
@@ -1257,12 +1257,12 @@ function splitEqualParts(inList::List{T}, inParts::ModelicaInteger)  where {T}
 end
 
 """ Splits a list into two sublists depending on a second list of bools. """
-function splitOnBoolList(inList::List{T}, inBools::List{Bool})  where {T}
-  local outFalseList::List{T} = nil
-  local outTrueList::List{T} = nil
+function splitOnBoolList(inList::List, inBools::List{Bool})
+  local outFalseList::List = nil
+  local outTrueList::List = nil
 
-  local e::T
-  local rest_e::List{T} = inList
+  local e
+  local rest_e::List = inList
   local b::Bool
   local rest_b::List{Bool} = inBools
 
@@ -1286,11 +1286,11 @@ Example:
 julia> partition(list(1, 2, 3, 4, 5), 2) => {{1, 2}, {3, 4}, {5}}
 ```
 """
-function partition(inList::List{T}, inPartitionLength::ModelicaInteger)  where {T}
-  local outPartitions::List{List{T}} = nil
+function partition(inList::List, inPartitionLength::ModelicaInteger)
+  local outPartitions::List{List} = nil
 
-  local lst::List{T} = inList
-  local part::List{T}
+  local lst::List = inList
+  local part::List
   local length::ModelicaInteger
 
   @match true = inPartitionLength > 0
@@ -1319,8 +1319,8 @@ Example: partition({1, 2, 3, 4, 5}, 2) => {{1, 2}, {3, 4}, {5}}
 The number of partitions is the same as partition(), but chosen to be
 as balanced in length as possible.
 =#
-function balancedPartition(lst::List{T}, maxLength::ModelicaInteger)  where {T}
-  local outPartitions::List{List{T}}
+function balancedPartition(lst::List, maxLength::ModelicaInteger)
+  local outPartitions::List{List}
 
   local length::ModelicaInteger
   local n::ModelicaInteger
@@ -1338,12 +1338,12 @@ end
 
 #= Returns a sublist determined by an offset and length.
 Example: sublist({1,2,3,4,5}, 2, 3) => {2,3,4} =#
-function sublist(inList::List{T}, inOffset::ModelicaInteger, inLength::ModelicaInteger)  where {T}
-  local outList::List{T} = nil
+function sublist(inList::List, inOffset::ModelicaInteger, inLength::ModelicaInteger)
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
-  local res::List{T}
+  local e
+  local rest::List = inList
+  local res::List
 
   @match true = inOffset > 0
   @match true = inLength >= 0
@@ -1365,7 +1365,7 @@ end
 #= Given two lists and a function, forms the cartesian product of the lists and
 applies the function to each resulting pair.
 Example: productMap({1, 2}, {3, 4}, intMul) = {1*3, 1*4, 2*3, 2*4} =#
-function productMap(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, ::Type{TO} = Any) where {T1, T2, TO, F<:Function}
+function productMap(inList1::List, inList2::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outResult::List = nil
 
   for e1 in listReverse(inList1), e2 in listReverse(inList2)
@@ -1425,7 +1425,7 @@ function transposeList(inList::List)
 end
 
 #= List-of-lists widens to Array{List}: rows mutate between Cons and Nil in place. =#
-function listArrayReverse(inLst::List{T}) where {T <: List}
+function listArrayReverse(inLst::List)
   local len::ModelicaInteger = listLength(inLst)
   local outArr = Array{List}(undef, len)
   for e in inLst
@@ -1435,32 +1435,13 @@ function listArrayReverse(inLst::List{T}) where {T <: List}
   outArr
 end
 
-function listArrayReverse(inLst::List{T})  where {T}
-  local outArr::Array{T}
-
-  local len::ModelicaInteger
-  local defaultValue::T
-
-  if listEmpty(inLst)
-    outArr = listArray(inLst)
-    return outArr
-  end
-  len = listLength(inLst)
-  @match _cons(defaultValue, _) = inLst
-  outArr = arrayCreateNoInit(len, defaultValue)
-  for e in inLst
-    arrayUpdateNoBoundsChecking(outArr, len, e)
-    len = len - 1
-  end
-  outArr
-end
 
 #= Takes two lists and a comparison function over two elements of the lists.
 It returns true if the two sets are equal, false otherwise. =#
-function setEqualOnTrue(inList1::List{T}, inList2::List{T}, inCompFunc::F) where {T, F<:Function}
+function setEqualOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
   local outIsEqual::Bool
 
-  local lst::List{T}
+  local lst::List
   local lst_size::ModelicaInteger
 
   lst = intersectionOnTrue(inList1, inList2, inCompFunc)
@@ -1472,7 +1453,7 @@ end
 #= Provides same functionality as listIntersection, but for integer values
 in sorted lists. The complexity in this case is O(n). =#
 function intersectionIntSorted(inList1::List{<:ModelicaInteger}, inList2::List{<:ModelicaInteger}) ::List{ModelicaInteger}
-  local outResult::List{ModelicaInteger} = nil
+  local outResult::List = nil
 
   local i1::ModelicaInteger
   local i2::ModelicaInteger
@@ -1548,7 +1529,7 @@ end
 
 """ Helper function to intersectionIntN. """
 function intersectionIntVec(inArray::Array{<:ModelicaInteger}, inList1::List{<:ModelicaInteger}) ::List{ModelicaInteger}
-  local outResult::List{ModelicaInteger} = nil
+  local outResult::List = nil
 
   for i in inList1
     if arrayGet(inArray, i) == 2
@@ -1629,7 +1610,7 @@ end
 #= Provides same functionality as setDifference, but for integer values
 between 1 and N. The complexity in this case is O(n) =#
 function setDifferenceIntN(inList1::List{<:ModelicaInteger}, inList2::List{<:ModelicaInteger}, inN::ModelicaInteger) ::List{ModelicaInteger}
-  local outDifference::List{ModelicaInteger} = nil
+  local outDifference::List = nil
 
   local a::Array{ModelicaInteger}
 
@@ -1651,8 +1632,8 @@ returns the set difference of the two lists A-B, using the comparison
 function passed as argument to determine identity between two elements.
 Example:
 setDifferenceOnTrue({1, 2, 3}, {1, 3}, intEq) => {2} =#
-function setDifferenceOnTrue(inList1::List{T}, inList2::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outDifference::List{T} = inList1
+function setDifferenceOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
+  local outDifference::List = inList1
 
   #=  Empty - B = Empty
   =#
@@ -1665,35 +1646,9 @@ function setDifferenceOnTrue(inList1::List{T}, inList2::List{T}, inCompFunc::F) 
   outDifference
 end
 
-# Mixed element types (a widened Cons{Any} vs a concretely-typed list) are still
-# lists of the same conceptual type at runtime.
-function setDifferenceOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
-  local outDifference::List = inList1
-  if listEmpty(inList1)
-    return outDifference
-  end
-  for e in inList2
-    (outDifference, _) = deleteMemberOnTrue(e, outDifference, inCompFunc)
-  end
-  outDifference
-end
-
 #= Takes two lists and returns the set difference of two lists A - B.
 Example:
 setDifference({1, 2, 3}, {1, 3}) => {2} =#
-function setDifference(inList1::List{T}, inList2::List{T})  where {T}
-  local outDifference::List{T} = inList1
-
-  if listEmpty(inList1)
-    return outDifference
-  end
-  for e in inList2
-    outDifference = deleteMember(outDifference, e)
-  end
-  outDifference
-end
-
-# Heterogeneous element types (Cons{Any} vs Cons{Int}) fail single-T dispatch.
 function setDifference(inList1::List, inList2::List)
   local outDifference::List = inList1
 
@@ -1706,10 +1661,11 @@ function setDifference(inList1::List, inList2::List)
   outDifference
 end
 
+
 #= Provides same functionality as listUnion, but for integer values between 1
 and N. The complexity in this case is O(n) =#
 function unionIntN(inList1::List{<:ModelicaInteger}, inList2::List{<:ModelicaInteger}, inN::ModelicaInteger) ::List{ModelicaInteger}
-  local outUnion::List{ModelicaInteger} = nil
+  local outUnion::List = nil
 
   local a::Array{ModelicaInteger}
   if inN > 0
@@ -1782,8 +1738,8 @@ end
 i.e. a list of all elements combined without duplicates.
 Example:
 union({0, 1}, {2, 1}) => {0, 1, 2} =#
-function unionAppendonUnion(inList1::List{T}, inList2::List{T})  where {T}
-  local outUnion::List{T}
+function unionAppendonUnion(inList1::List, inList2::List)
+  local outUnion::List
 
   outUnion = listReverse(inList1)
   for e in inList2
@@ -1797,8 +1753,8 @@ end
 returns the union of the two lists, using the comparison function passed as
 argument to determine identity between two elements. Example:
 unionOnTrue({1, 2}, {2, 3}, intEq) => {1, 2, 3} =#
-function unionOnTrue(inList1::List{T}, inList2::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outUnion::List{T} = nil
+function unionOnTrue(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
+  local outUnion::List = nil
 
   for e in inList1
     outUnion = unionEltOnTrue(e, outUnion, inCompFunc)
@@ -1853,8 +1809,8 @@ function unionOnTrueList(inList::List, inCompFunc::F) where {F<:Function}
   outUnion
 end
 
-function unionAppendListOnTrue(inList::List{T}, inUnion::List{T}, inCompFunc::F) where {T, F<:Function}
-  local outUnion::List{T}
+function unionAppendListOnTrue(inList::List, inUnion::List, inCompFunc::F) where {F<:Function}
+  local outUnion::List
 
   outUnion = unionOnTrueList(list(inList, inUnion), inCompFunc)
   outUnion
@@ -1862,7 +1818,7 @@ end
 
 #= Takes a list and a function, and creates a new list by applying the function
 to each element of the list. =#
-function map(inList::List{TI}, inFunc::F, ::Type{TO} = Any) where {TI, TO, F<:Function}
+function map(inList::List, inFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -1874,13 +1830,13 @@ end
 
 #= Takes a list and a function, and creates a new list by applying the function
 to each element of the list. =#
-function mapCheckReferenceEq(inList::List{TI}, inFunc::F) where {TI, F<:Function}
-  local outList::List{TI}
+function mapCheckReferenceEq(inList::List, inFunc::F) where {F<:Function}
+  local outList::List
 
   local allEq::Bool = true
-  local delst::DoubleEnded.MutableList{TI}
+  local delst::DoubleEnded.MutableList
   local n::ModelicaInteger = 0
-  local e1::TI
+  local e1
 
   for e in inList
     e1 = inFunc(e)
@@ -1918,7 +1874,7 @@ end
 #= Takes a list and a function, and creates a new list by applying the function
 to each element of the list. The created list will be reversed compared to
 the given list. =#
-function mapReverse(inList::List{TI}, inFunc::F, ::Type{TO} = Any) where {TI, TO, F<:Function}
+function mapReverse(inList::List, inFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List
   outList = listReverse(list(inFunc(e) for e in inList))
   outList
@@ -1926,7 +1882,7 @@ end
 
 #= Takes a list and a function, and creates two new lists by applying the
 function to each element of the list. =#
-function map_2(inList::List{TI}, inFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TI, TO1, TO2, F<:Function}
+function map_2(inList::List, inFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TO1, TO2, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
@@ -1949,7 +1905,7 @@ end
 
 #= Takes a list and a function, and creates three new lists by applying the
 function to each element of the list. =#
-function map_3(inList::List{TI}, inFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TI, TO1, TO2, TO3, F<:Function}
+function map_3(inList::List, inFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TO1, TO2, TO3, F<:Function}
   local outList3::List = nil
   local outList2::List = nil
   local outList1::List = nil
@@ -2036,7 +1992,7 @@ end
 
 #= Takes a list and a function which does not return a value. The function is
 probably a function with side effects, like print. =#
-function map_0(inList::List{T}, inFunc::F) where {T, F<:Function}
+function map_0(inList::List, inFunc::F) where {F<:Function}
   for e in inList
     inFunc(e)
   end
@@ -2044,7 +2000,7 @@ end
 
 #= Takes a list, a function and one extra argument, and creates a new list
 by applying the function to each element of the list. =#
-function map1(inList::List{TI}, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {TI, ArgT1, TO, F<:Function}
+function map1(inList::List, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {ArgT1, TO, F<:Function}
   local outList::List
 
   outList = list(inMapFunc(e, inArg1) for e in inList)
@@ -2054,7 +2010,7 @@ end
 #= Takes a list, a function and one extra argument, and creates a new list
 by applying the function to each element of the list. The created list will
 be reversed compared to the given list. =#
-function map1Reverse(inList::List{TI}, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {TI, TO, ArgT1, F<:Function}
+function map1Reverse(inList::List, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {TO, ArgT1, F<:Function}
   local outList::List
 
   outList = listReverse(list(inMapFunc(e, inArg1) for e in inList))
@@ -2064,7 +2020,7 @@ end
 #= Takes a list, a function and one extra argument, and creates a new list
 by applying the function to each element of the list. The given map
 function has it's arguments reversed compared to map1. =#
-function map1r(inList::List{TI}, inFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {TI, ArgT1, TO, F<:Function}
+function map1r(inList::List, inFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {ArgT1, TO, F<:Function}
   local outList::List
 
   outList = list(inFunc(inArg1, e) for e in inList)
@@ -2073,7 +2029,7 @@ end
 
 #= Takes a list, a function and one extra argument, and applies the functions to
 each element of the list. =#
-function map1_0(inList::List{TI}, inFunc::F, inArg1::ArgT1) where {TI, ArgT1, F<:Function}
+function map1_0(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   for e in inList
     inFunc(e, inArg1)
   end
@@ -2081,7 +2037,7 @@ end
 
 #= Takes a list and a function, and creates two new lists by applying the
 function to each element of the list. =#
-function map1_2(inList::List{TI}, inFunc::F, inArg1::ArgT1) where {TI, ArgT1, F<:Function}
+function map1_2(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
@@ -2100,7 +2056,7 @@ end
 
 #= Takes a list and a function, and creates three new lists by applying the
 function to each element of the list. =#
-function map1_3(inList::List{TI}, inFunc::F, inArg1::ArgT1, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TI, TO1, TO2, TO3, ArgT1, F<:Function}
+function map1_3(inList::List, inFunc::F, inArg1::ArgT1, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TO1, TO2, TO3, ArgT1, F<:Function}
   local outList3::List = nil
   local outList2::List = nil
   local outList1::List = nil
@@ -2123,7 +2079,7 @@ end
 
 #= Takes a list, a function and two extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map2(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, TO, F<:Function}
+function map2(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {ArgT1, ArgT2, TO, F<:Function}
   local outList::List
 
   outList = list(inFunc(e, inArg1, inArg2) for e in inList)
@@ -2133,7 +2089,7 @@ end
 #= Takes a list, a function and two extra arguments, and creates a new list
 by applying the function to each element of the list. The created list will
 be reversed compared to the given list. =#
-function map2Reverse(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, TO, F<:Function}
+function map2Reverse(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {ArgT1, ArgT2, TO, F<:Function}
   local outList::List
 
   outList = listReverse(list(inFunc(e, inArg1, inArg2) for e in inList))
@@ -2143,7 +2099,7 @@ end
 #= Takes a list, a function and two extra argument, and creates a new list
 by applying the function to each element of the list. The given map
 function has it's arguments in another order compared to map2 and map2r. =#
-function map2rm(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, TO, F<:Function}
+function map2rm(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {ArgT1, ArgT2, TO, F<:Function}
   local outList::List
 
   outList = list(inFunc(inArg1, e, inArg2) for e in inList)
@@ -2153,7 +2109,7 @@ end
 #= Takes a list, a function and two extra argument, and creates a new list
 by applying the function to each element of the list. The given map
 function has it's arguments reversed compared to map2. =#
-function map2r(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, TO, F<:Function}
+function map2r(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {ArgT1, ArgT2, TO, F<:Function}
   local outList::List
 
   outList = list(inFunc(inArg1, inArg2, e) for e in inList)
@@ -2162,7 +2118,7 @@ end
 
 #= Takes a list, a function and two extra argument, and applies the functions to
 each element of the list. =#
-function map2_0(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {TI, ArgT1, ArgT2, F<:Function}
+function map2_0(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
   for e in inList
     inFunc(e, inArg1, inArg2)
   end
@@ -2170,7 +2126,7 @@ end
 
 #= Takes a list, a function and two extra argument, and creates two new lists
 by applying the function to each element of the list. =#
-function map2_2(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TI, TO1, TO2, ArgT1, ArgT2, F<:Function}
+function map2_2(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TO1, TO2, ArgT1, ArgT2, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
@@ -2189,7 +2145,7 @@ end
 
 #= Takes a list, a function and two extra argument, and creates three new lists
 by applying the function to each element of the list. =#
-function map2_3(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TI, TO1, TO2, TO3, ArgT1, ArgT2, F<:Function}
+function map2_3(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO1} = Any, ::Type{TO2} = Any, ::Type{TO3} = Any) where {TO1, TO2, TO3, ArgT1, ArgT2, F<:Function}
   local outList3::List = nil
   local outList2::List = nil
   local outList1::List = nil
@@ -2212,7 +2168,7 @@ end
 
 #= Takes a list, a function and three extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map3(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, TO, F<:Function}
+function map3(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2225,7 +2181,7 @@ end
 #= Takes a list, a function and three extra argument, and creates a new list
 by applying the function to each element of the list. The given map
 function has it's arguments reversed compared to map3. =#
-function map3r(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, TO, F<:Function}
+function map3r(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2237,7 +2193,7 @@ end
 
 #= Takes a list, a function and three extra argument, and applies the functions to
 each element of the list. =#
-function map3_0(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {TI, ArgT1, ArgT2, ArgT3, F<:Function}
+function map3_0(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {ArgT1, ArgT2, ArgT3, F<:Function}
   for e in inList
     inFunc(e, inArg1, inArg2, inArg3)
   end
@@ -2245,7 +2201,7 @@ end
 
 #= Takes a list, a function and three extra argument, and creates two new lists
 by applying the function to each element of the list. =#
-function map3_2(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TI, TO1, TO2, ArgT1, ArgT2, ArgT3, F<:Function}
+function map3_2(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TO1, TO2, ArgT1, ArgT2, ArgT3, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
@@ -2264,7 +2220,7 @@ end
 
 #= Takes a list, a function and four extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map4(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, TO, F<:Function}
+function map4(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2276,7 +2232,7 @@ end
 
 #= Takes a list, a function and four extra arguments, and applies the functions to
 each element of the list. =#
-function map4_0(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function map4_0(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4) where {ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   for e in inList
     inFunc(e, inArg1, inArg2, inArg3, inArg4)
   end
@@ -2284,7 +2240,7 @@ end
 
 #= Takes a list, a function and three extra argument, and creates two new lists
 by applying the function to each element of the list. =#
-function map4_2(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TI, TO1, TO2, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function map4_2(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TO1, TO2, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
@@ -2303,7 +2259,7 @@ end
 
 #= Takes a list, a function and five extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map5(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, TO, F<:Function}
+function map5(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2315,7 +2271,7 @@ end
 
 #= Takes a list, a function and six extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map6(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, TO, F<:Function}
+function map6(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2327,7 +2283,7 @@ end
 
 #= Takes a list, a function and seven extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map7(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, TO, F<:Function}
+function map7(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2339,7 +2295,7 @@ end
 
 #= Takes a list, a function and eight extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map8(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, inArg8::ArgT8, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, ArgT8, TO, F<:Function}
+function map8(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, inArg8::ArgT8, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, ArgT8, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2351,7 +2307,7 @@ end
 
 #= Takes a list, a function and nine extra arguments, and creates a new list
 by applying the function to each element of the list. =#
-function map9(inList::List{TI}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, inArg8::ArgT8, inArg9::ArgT9, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, ArgT8, ArgT9, TO, F<:Function}
+function map9(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inArg5::ArgT5, inArg6::ArgT6, inArg7::ArgT7, inArg8::ArgT8, inArg9::ArgT9, ::Type{TO} = Any) where {ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, ArgT7, ArgT8, ArgT9, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2364,7 +2320,7 @@ end
 #= Takes a list and a function that maps elements to lists, which are flattened
 into one list. Example (fill2(n) = {n, n}):
 mapFlat({1, 2, 3}, fill2) => {1, 1, 2, 2, 3, 3} =#
-function mapFlat(inList::List{TI}, inMapFunc::F, ::Type{TO} = Any) where {TI, TO, F<:Function}
+function mapFlat(inList::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List = nil
 
   for e in listReverse(inList)
@@ -2377,7 +2333,7 @@ end
 into one list. Returns the values in reverse order as the input.
 Example (fill2(n) = {n, n}):
 mapFlat({1, 2, 3}, fill2) => {3, 3, 2, 2, 1, 1} =#
-function mapFlatReverse(inList::List{TI}, inMapFunc::F, ::Type{TO} = Any) where {TI, TO, F<:Function}
+function mapFlatReverse(inList::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2389,7 +2345,7 @@ end
 #= Takes a list and a function that maps elements to lists, which are flattened
 into one list. This function also takes an extra argument that is passed to
 the mapping function. =#
-function map1Flat(inList::List{TI}, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {TI, ArgT1, TO, F<:Function}
+function map1Flat(inList::List, inMapFunc::F, inArg1::ArgT1, ::Type{TO} = Any) where {ArgT1, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2402,7 +2358,7 @@ end
 #= Takes a list and a function that maps elements to lists, which are flattened
 into one list. This function also takes two extra arguments that are passed
 to the mapping function. =#
-function map2Flat(inList::List{TI}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {TI, ArgT1, ArgT2, TO, F<:Function}
+function map2Flat(inList::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, ::Type{TO} = Any) where {ArgT1, ArgT2, TO, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2413,7 +2369,7 @@ function map2Flat(inList::List{TI}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, 
 end
 
 """ More efficient than: map(map(inList, inMapFunc1), inMapFunc2) """
-function mapMap(inList::List{TI}, inMapFunc1::F1, inMapFunc2::F2, ::Type{TO} = Any) where {TI, TO, F1<:Function, F2<:Function}
+function mapMap(inList::List, inMapFunc1::F1, inMapFunc2::F2, ::Type{TO} = Any) where {TO, F1<:Function, F2<:Function}
   local outList::List = nil
 
   for e in inList
@@ -2424,7 +2380,7 @@ function mapMap(inList::List{TI}, inMapFunc1::F1, inMapFunc2::F2, ::Type{TO} = A
 end
 
 """ More efficient than map_0(map(inList, inMapFunc1), inMapFunc2), """
-function mapMap_0(inList::List{TI}, inMapFunc1::F1, inMapFunc2::F2) where {TI, F1<:Function, F2<:Function}
+function mapMap_0(inList::List, inMapFunc1::F1, inMapFunc2::F2) where {F1<:Function, F2<:Function}
   for e in inList
     inMapFunc2(inMapFunc1(e))
   end
@@ -2432,7 +2388,7 @@ end
 
 #= Applies a function to all elements in the lists, and fails if not all
 elements are equal to the given value. =#
-function mapAllValue(inList::List{TI}, inMapFunc::F, inValue::VT, ::Type{TO} = Any) where {TI, VT, TO, F<:Function}
+function mapAllValue(inList::List, inMapFunc::F, inValue::VT, ::Type{TO} = Any) where {VT, TO, F<:Function}
   local eo::TO
 
   for e in inList
@@ -2443,7 +2399,7 @@ end
 
 #= Same as mapAllValue, but returns true or false instead of succeeding or
 failing. =#
-function mapAllValueBool(inList::List{TI}, inMapFunc::F, inValue::VT) where {TI, VT, F<:Function}
+function mapAllValueBool(inList::List, inMapFunc::F, inValue::VT) where {VT, F<:Function}
   local outAllValue::Bool
 
   try
@@ -2456,7 +2412,7 @@ function mapAllValueBool(inList::List{TI}, inMapFunc::F, inValue::VT) where {TI,
 end
 
 """ Same as mapAllValueBool, but takes one extra argument. """
-function map1AllValueBool(inList::List{TI}, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {TI, VT, ArgT1, F<:Function}
+function map1AllValueBool(inList::List, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {VT, ArgT1, F<:Function}
   local outAllValue::Bool
 
   try
@@ -2471,7 +2427,7 @@ end
 #= Applies a function to all elements in the lists, and fails if not all
 elements are equal to the given value. This function also takes an extra
 argument that are passed to the mapping function. =#
-function map1AllValue(inList::List{TI}, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {TI, VT, ArgT1, F<:Function}
+function map1AllValue(inList::List, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {VT, ArgT1, F<:Function}
   local eo::Any
 
   for e in inList
@@ -2483,7 +2439,7 @@ end
 #= Applies a function to all elements in the lists, and fails if not all
 elements are equal to the given value. This function also takes an extra
 argument that are passed to the mapping function. =#
-function map1rAllValue(inList::List{TI}, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {TI, VT, ArgT1, F<:Function}
+function map1rAllValue(inList::List, inMapFunc::F, inValue::VT, inArg1::ArgT1) where {VT, ArgT1, F<:Function}
   local eo::Any
 
   for e in inList
@@ -2495,7 +2451,7 @@ end
 #= Applies a function to all elements in the lists, and fails if not all
 elements are equal to the given value. This function also takes two extra
 arguments that are passed to the mapping function. =#
-function map2AllValue(inList::List{TI}, inMapFunc::F, inValue::VT, inArg1::ArgT1, inArg2::ArgT2) where {TI, VT, ArgT1, ArgT2, F<:Function}
+function map2AllValue(inList::List, inMapFunc::F, inValue::VT, inArg1::ArgT1, inArg2::ArgT2) where {VT, ArgT1, ArgT2, F<:Function}
   local eo::Any
 
   for e in inList
@@ -2534,7 +2490,7 @@ end
 #= Applies a function to all elements in the lists, and fails if not all
 elements are equal to the given value. This function also takes an extra
 argument that are passed to the mapping function and updated =#
-function foldAllValue(inList::List{TI}, inMapFunc::F, inValue::TO, inArg1::ArgT1) where {TI, TO, ArgT1, F<:Function}
+function foldAllValue(inList::List, inMapFunc::F, inValue::TO, inArg1::ArgT1) where {TO, ArgT1, F<:Function}
   local arg::ArgT1 = inArg1
   local eo::TO
 
@@ -2564,7 +2520,7 @@ function apply(lst::List, fn::F) where {F<:Function}
   nothing
 end
 
-function applyAndFold(inList::List{TI}, inFoldFunc::F1, inApplyFunc::F2, inFoldArg::FT) where {TI, FT, F1<:Function, F2<:Function}
+function applyAndFold(inList::List, inFoldFunc::F1, inApplyFunc::F2, inFoldArg::FT) where {FT, F1<:Function, F2<:Function}
   local outResult = inFoldArg
 
   for e in inList
@@ -2575,7 +2531,7 @@ end
 
 #= fold(map(inList, inApplyFunc(inExtraArg)), inFoldFunc, inFoldArg), but is more
 memory-efficient. =#
-function applyAndFold1(inList::List{TI}, inFoldFunc::F1, inApplyFunc::F2, inExtraArg::ArgT1, inFoldArg::FT) where {TI, FT, ArgT1, F1<:Function, F2<:Function}
+function applyAndFold1(inList::List, inFoldFunc::F1, inApplyFunc::F2, inExtraArg::ArgT1, inFoldArg::FT) where {FT, ArgT1, F1<:Function, F2<:Function}
   local outResult = inFoldArg
 
   for e in inList
@@ -2585,7 +2541,7 @@ function applyAndFold1(inList::List{TI}, inFoldFunc::F1, inApplyFunc::F2, inExtr
 end
 
 """ Maps each element of a inList to Boolean type with inFunc. Stops mapping at first occurrence of true return value. """
-function mapBoolOr(inList::List{TI}, inFunc::F) where {TI, F<:Function}
+function mapBoolOr(inList::List, inFunc::F) where {F<:Function}
   local res::Bool = false
   for e in inList
     if inFunc(e)
@@ -2597,7 +2553,7 @@ function mapBoolOr(inList::List{TI}, inFunc::F) where {TI, F<:Function}
 end
 
 """ Maps each element of a inList to Boolean type with inFunc. Stops mapping at first occurrence of true return value. """
-function mapBoolAnd(inList::List{TI}, inFunc::F) where {TI, F<:Function}
+function mapBoolAnd(inList::List, inFunc::F) where {F<:Function}
   local res::Bool = false
 
   for e in inList
@@ -2610,7 +2566,7 @@ function mapBoolAnd(inList::List{TI}, inFunc::F) where {TI, F<:Function}
 end
 
 """ Maps each element of a inList to Boolean type with inFunc. Stops mapping at first occurrence of true return value. """
-function mapMapBoolAnd(inList::List{TI}, inFunc::F1, inBFunc::F2) where {TI, F1<:Function, F2<:Function}
+function mapMapBoolAnd(inList::List, inFunc::F1, inBFunc::F2) where {F1<:Function, F2<:Function}
   local res::Bool = false
   for e in inList
     if ! inBFunc(inFunc(e))
@@ -2623,7 +2579,7 @@ end
 
 #= Maps each element of a inList to Boolean type with inFunc. Stops mapping at first occurrence of true return value.
 inFunc takes one additional argument. =#
-function map1BoolOr(inList::List{TI}, inFunc::F, inArg1::ArgT1) where {TI, ArgT1, F<:Function}
+function map1BoolOr(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local res::Bool = false
 
   for e in inList
@@ -2637,7 +2593,7 @@ end
 
 #= Maps each element of a inList to Boolean type with inFunc. Stops mapping at first occurrence of false return value.
 inFunc takes one additional argument. =#
-function map1BoolAnd(inList::List{TI}, inFunc::F, inArg1::ArgT1) where {TI, ArgT1, F<:Function}
+function map1BoolAnd(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local res::Bool = false
 
   for e in inList
@@ -2751,7 +2707,7 @@ function fold(inList::List, inFoldFunc::F, inStartValue) where {F<:Function}
 end
 
 """ Same as fold, but with reversed order on the fold function arguments. """
-function foldr(inList::List{T}, inFoldFunc::F, inStartValue::FT, ::Type{TO} = Any) where {T, FT, TO, F<:Function}
+function foldr(inList::List, inFoldFunc::F, inStartValue::FT, ::Type{TO} = Any) where {FT, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2764,7 +2720,7 @@ end
 argument that is 'updated', thus returned from the function, and a constant
 argument that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold1(inList::List{T}, inFoldFunc::F, inExtraArg::ArgT1, inStartValue::FT, ::Type{TO} = Any) where {T, FT, ArgT1, TO, F<:Function}
+function fold1(inList::List, inFoldFunc::F, inExtraArg::ArgT1, inStartValue::FT, ::Type{TO} = Any) where {FT, ArgT1, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2774,7 +2730,7 @@ function fold1(inList::List{T}, inFoldFunc::F, inExtraArg::ArgT1, inStartValue::
 end
 
 """ Same as fold1, but with reversed order on the fold function arguments. """
-function fold1r(inList::List{T}, inFoldFunc::F, inExtraArg::ArgT1, inStartValue::FT, ::Type{TO} = Any) where {T, FT, ArgT1, TO, F<:Function}
+function fold1r(inList::List, inFoldFunc::F, inExtraArg::ArgT1, inStartValue::FT, ::Type{TO} = Any) where {FT, ArgT1, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2787,7 +2743,7 @@ end
 argument that is 'updated', thus returned from the function, and two constant
 arguments that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold2(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue::FT, ::Type{TO} = Any) where {T, FT, ArgT1, ArgT2, TO, F<:Function}
+function fold2(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue::FT, ::Type{TO} = Any) where {FT, ArgT1, ArgT2, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2800,7 +2756,7 @@ end
 arguments that is 'updated', thus returned from the function, and three constant
 arguments that are not updated. fold will call the function for each element in
 a sequence, updating the start values. =#
-function fold22(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue1::FT1, inStartValue2::FT2) where {T, FT1, FT2, ArgT1, ArgT2, F<:Function}
+function fold22(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue1::FT1, inStartValue2::FT2) where {FT1, FT2, ArgT1, ArgT2, F<:Function}
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
 
@@ -2848,7 +2804,7 @@ function foldList2(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2:
 end
 
 """ Same as fold2, but with reversed order on the fold function arguments. """
-function fold2r(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue::FT, ::Type{TO} = Any) where {T, FT, ArgT1, ArgT2, TO, F<:Function}
+function fold2r(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inStartValue::FT, ::Type{TO} = Any) where {FT, ArgT1, ArgT2, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2861,7 +2817,7 @@ end
 argument that is 'updated', thus returned from the function, and three constant
 arguments that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold3(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inStartValue::FT, ::Type{TO} = Any) where {T, FT, ArgT1, ArgT2, ArgT3, TO, F<:Function}
+function fold3(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inStartValue::FT, ::Type{TO} = Any) where {FT, ArgT1, ArgT2, ArgT3, TO, F<:Function}
   local outResult::TO = inStartValue
 
   for e in inList
@@ -2871,7 +2827,7 @@ function fold3(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::
 end
 
 """ Same as fold3, but with reversed order on the fold function arguments. """
-function fold3r(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inStartValue::FT) where {T, FT, ArgT1, ArgT2, ArgT3, F<:Function}
+function fold3r(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inStartValue::FT) where {FT, ArgT1, ArgT2, ArgT3, F<:Function}
   local outResult = inStartValue
 
   for e in inList
@@ -2884,7 +2840,7 @@ end
 argument that is 'updated', thus returned from the function, and four constant
 arguments that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold4(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inStartValue::FT) where {T, FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function fold4(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inStartValue::FT) where {FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   local outResult = inStartValue
 
   for e in inList
@@ -2897,7 +2853,7 @@ end
 arguments that is 'updated', thus returned from the function, and three constant
 arguments that are not updated. fold will call the function for each element in
 a sequence, updating the start values. =#
-function fold43(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {T, FT1, FT2, FT3, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function fold43(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {FT1, FT2, FT3, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   local outResult3 = inStartValue3
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
@@ -2911,7 +2867,7 @@ end
 #= Takes a list and a function operating on list elements having two extra
 arguments that are 'updated', thus returned from the function. fold will call
 the function for each element in a sequence, updating the start value. =#
-function fold20(inList::List{T}, inFoldFunc::F, inStartValue1::FT1, inStartValue2::FT2) where {T, FT1, FT2, F<:Function}
+function fold20(inList::List, inFoldFunc::F, inStartValue1::FT1, inStartValue2::FT2) where {FT1, FT2, F<:Function}
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
 
@@ -2924,7 +2880,7 @@ end
 #= Takes a list and a function operating on list elements having three extra
 arguments that are 'updated', thus returned from the function. fold will call
 the function for each element in a sequence, updating the start value. =#
-function fold30(inList::List{T}, inFoldFunc::F, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {T, FT1, FT2, FT3, F<:Function}
+function fold30(inList::List, inFoldFunc::F, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {FT1, FT2, FT3, F<:Function}
   local outResult3 = inStartValue3
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
@@ -2939,7 +2895,7 @@ end
 argument that are 'updated', thus returned from the function, and one constant
 argument that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold21(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inStartValue1::FT1, inStartValue2::FT2) where {T, FT1, FT2, ArgT1, F<:Function}
+function fold21(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inStartValue1::FT1, inStartValue2::FT2) where {FT1, FT2, ArgT1, F<:Function}
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
 
@@ -2953,7 +2909,7 @@ end
 argument that are 'updated', thus returned from the function, and one constant
 argument that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold31(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {T, FT1, FT2, FT3, ArgT1, F<:Function}
+function fold31(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inStartValue1::FT1, inStartValue2::FT2, inStartValue3::FT3) where {FT1, FT2, FT3, ArgT1, F<:Function}
   local outResult3 = inStartValue3
   local outResult2 = inStartValue2
   local outResult1 = inStartValue1
@@ -2968,7 +2924,7 @@ end
 argument that is 'updated', thus returned from the function, and five constant
 arguments that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold5(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inExtraArg5::ArgT5, inStartValue::FT) where {T, FT, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, F<:Function}
+function fold5(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inExtraArg5::ArgT5, inStartValue::FT) where {FT, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, F<:Function}
   local outResult = inStartValue
 
   for e in inList
@@ -2981,7 +2937,7 @@ end
 argument that is 'updated', thus returned from the function, and six constant
 arguments that is not updated. fold will call the function for each element in
 a sequence, updating the start value. =#
-function fold6(inList::List{T}, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inExtraArg5::ArgT5, inExtraArg6::ArgT6, inStartValue::FT) where {T, FT, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, F<:Function}
+function fold6(inList::List, inFoldFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2, inExtraArg3::ArgT3, inExtraArg4::ArgT4, inExtraArg5::ArgT5, inExtraArg6::ArgT6, inStartValue::FT) where {FT, ArgT1, ArgT2, ArgT3, ArgT4, ArgT5, ArgT6, F<:Function}
   local outResult = inStartValue
 
   for e in inList
@@ -2993,7 +2949,7 @@ end
 #= Takes a list, an extra argument and a function. The function will be applied
 to each element in the list, and the extra argument will be passed to the
 function and updated. =#
-function mapFold(inList::List{TI}, inFunc::F, inArg::FT, ::Type{TO} = Any) where {TI, FT, TO, F<:Function}
+function mapFold(inList::List, inFunc::F, inArg::FT, ::Type{TO} = Any) where {FT, TO, F<:Function}
   local outArg = inArg
   local outList::List = nil
 
@@ -3008,7 +2964,7 @@ function mapFold(inList::List{TI}, inFunc::F, inArg::FT, ::Type{TO} = Any) where
 end
 
 
-function mapFoldRef(inList::List{TI}, inFunc::F, outRefArg::Ref{FT}, ::Type{TO} = Any) where {TI, FT, TO, F<:Function}
+function mapFoldRef(inList::List, inFunc::F, outRefArg::Ref{FT}, ::Type{TO} = Any) where {FT, TO, F<:Function}
   local outArg = inArg
   local outList::List = nil
   local res::TO
@@ -3025,7 +2981,7 @@ end
 ```mapFoldSO```
 Like mapFold but with a single output.
 """
-function mapFoldSO(inList::List{TI}, inFunc::F, inArg::FT, ::Type{TO} = Any) where {TI, FT, TO, F<:Function}
+function mapFoldSO(inList::List, inFunc::F, inArg::FT, ::Type{TO} = Any) where {FT, TO, F<:Function}
   local outArg = inArg
   local outList::List = nil
   local res::TO
@@ -3040,7 +2996,7 @@ end
 #= Takes a list, a function, and two extra arguments. The function will be applied
 to each element in the list, and the extra arguments will be passed to the
 function and updated. =#
-function mapFold2(inList::List{TI}, inFunc::F, inArg1::FT1, inArg2::FT2) where {TI, FT1, FT2, F<:Function}
+function mapFold2(inList::List, inFunc::F, inArg1::FT1, inArg2::FT2) where {FT1, FT2, F<:Function}
   # Rebind the arguments: fold state may change concrete type across iterations.
   local outList::List = nil
   local res
@@ -3055,10 +3011,7 @@ end
 #= Takes a list, a function, and three extra arguments. The function will be applied
 to each element in the list, and the extra arguments will be passed to the
 function and updated. =#
-function mapFold3(inList::List{TI}, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3) where {TI, FT1, FT2, FT3, F<:Function}
-
-
-
+function mapFold3(inList::List, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3) where {FT1, FT2, FT3, F<:Function}
   local outList::List = nil
 
   local res::Any
@@ -3074,11 +3027,7 @@ end
 #= Takes a list, a function, and four extra arguments. The function will be applied
 to each element in the list, and the extra arguments will be passed to the
 function and updated. =#
-function mapFold4(inList::List{TI}, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3, inArg4::FT4) where {TI, FT1, FT2, FT3, FT4, F<:Function}
-
-
-
-
+function mapFold4(inList::List, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3, inArg4::FT4) where {FT1, FT2, FT3, FT4, F<:Function}
   local outList::List = nil
 
   local res::Any
@@ -3094,12 +3043,7 @@ end
 #= Takes a list, a function, and five extra arguments. The function will be applied
 to each element in the list, and the extra arguments will be passed to the
 function and updated. =#
-function mapFold5(inList::List{TI}, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3, inArg4::FT4, inArg5::FT5) where {TI, FT1, FT2, FT3, FT4, FT5, F<:Function}
-
-
-
-
-
+function mapFold5(inList::List, inFunc::F, inArg1::FT1, inArg2::FT2, inArg3::FT3, inArg4::FT4, inArg5::FT5) where {FT1, FT2, FT3, FT4, FT5, F<:Function}
   local outList::List = nil
 
   local res::Any
@@ -3120,9 +3064,9 @@ Takes a list, an extra argument, an extra constant argument, and a function.
 The function will be applied to each element in the list, and the extra
 argument will be passed to the function and updated.
 """
-function map1Fold(inList::List{TI}, inFunc::Function, inConstArg::ArgT1, inArg, TY = Any)  where {TI, ArgT1}
+function map1Fold(inList::List, inFunc::Function, inConstArg::ArgT1, inArg, TY = Any) where {ArgT1}
   local outArg = inArg
-  local outList::List{TY} = nil
+  local outList::List = nil
   local res::Any
   for e in inList
     (res, outArg) = inFunc(e, inConstArg, outArg)
@@ -3135,11 +3079,11 @@ end
 #= Takes a list, two extra constant arguments, an extra argument, and a function.
 The function will be applied to each element in the list, and the extra
 argument will be passed to the function and updated. =#
-function map2Fold(inList::List{TI}, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT, inAccum::List{TO} = nil) where {TI, TO, FT, ArgT1, ArgT2, F<:Function}
+function map2Fold(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT, inAccum::List = nil) where {FT, ArgT1, ArgT2, F<:Function}
   local outArg = inArg
   local outList::List = inAccum
 
-  local res::TO
+  local res
 
   for e in inList
     (res, outArg) = inFunc(e, inConstArg, inConstArg2, outArg)
@@ -3152,11 +3096,11 @@ end
 #= Takes a list, two extra constant arguments, an extra argument, and a function.
 The function will be applied to each element in the list, and the extra
 argument will be passed to the function and updated. =#
-function map2FoldCheckReferenceEq(inList::List{TIO}, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT) where {TIO, FT, ArgT1, ArgT2, F<:Function}
+function map2FoldCheckReferenceEq(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT) where {FT, ArgT1, ArgT2, F<:Function}
   local outArg = inArg
-  local outList::List{TIO}
+  local outList::List
 
-  local res::TIO
+  local res
   local allEq::Bool = true
   local delst::DoubleEnded.MutableList{TIO}
   local n::ModelicaInteger = 0
@@ -3195,7 +3139,7 @@ end
 #= Takes a list, three extra constant arguments, an extra argument, and a function.
 The function will be applied to each element in the list, and the extra
 argument will be passed to the function and updated. =#
-function map3Fold(inList::List{TI}, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inConstArg3::ArgT3, inArg::FT) where {TI, FT, ArgT1, ArgT2, ArgT3, F<:Function}
+function map3Fold(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inConstArg3::ArgT3, inArg::FT) where {FT, ArgT1, ArgT2, ArgT3, F<:Function}
   local outArg = inArg
   local outList::List = nil
 
@@ -3212,7 +3156,7 @@ end
 #= Takes a list, four extra constant arguments, an extra argument, and a function.
 The function will be applied to each element in the list, and the extra
 argument will be passed to the function and updated. =#
-function map4Fold(inList::List{TI}, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inConstArg3::ArgT3, inConstArg4::ArgT4, inArg::FT) where {TI, FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function map4Fold(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inConstArg3::ArgT3, inConstArg4::ArgT4, inArg::FT) where {FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   local outArg = inArg
   local outList::List = nil
 
@@ -3230,7 +3174,7 @@ end
 to each element in the list, and the extra argument will be passed to the
 function and updated. The input and outputs of the function are joined as
 tuples. =#
-function mapFoldTuple(inList::List{TI}, inFunc::F, inArg::FT) where {TI, FT, F<:Function}
+function mapFoldTuple(inList::List, inFunc::F, inArg::FT) where {FT, F<:Function}
   local outArg = inArg
   local outList::List = nil
 
@@ -3311,9 +3255,9 @@ end
 The function performs a reduction of the list to a single value using the
 function. Example:
 reduce({1, 2, 3}, intAdd) => 6 =#
-function reduce(inList::List{T}, inReduceFunc::F) where {T, F<:Function}
-  local outResult::T
-  local rest::List{T}
+function reduce(inList::List, inReduceFunc::F) where {F<:Function}
+  local outResult
+  local rest::List
   @match _cons(outResult, rest) = inList
   for e in rest
     outResult = inReduceFunc(outResult, e)
@@ -3325,10 +3269,10 @@ end
 The function performs a reduction of the list to a single value using the
 function. This function also takes an extra argument that is sent to the
 reduction function. =#
-function reduce1(inList::List{T}, inReduceFunc::F, inExtraArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outResult::T
+function reduce1(inList::List, inReduceFunc::F, inExtraArg1::ArgT1) where {ArgT1, F<:Function}
+  local outResult
 
-  local rest::List{T}
+  local rest::List
 
   @match _cons(outResult, rest) = inList
   for e in rest
@@ -3407,11 +3351,11 @@ end
 
 #= Takes two lists of the same type and threads (interleaves) them together.
 Example: thread({1, 2, 3}, {4, 5, 6}) => {4, 1, 5, 2, 6, 3} =#
-function thread(inList1::List{T}, inList2::List{T}, inAccum::List{T} = nil)  where {T}
-  local outList::List{T} = nil
+function thread(inList1::List, inList2::List, inAccum::List = nil)
+  local outList::List = nil
 
-  local e2::T
-  local rest_e2::List{T} = inList2
+  local e2
+  local rest_e2::List = inList2
 
   for e1 in inList1
     @match _cons(e2, rest_e2) = rest_e2
@@ -3425,13 +3369,13 @@ end
 #= Takes three lists of the same type and threads (interleaves) them together.
 Example: thread({1, 2, 3}, {4, 5, 6}, {7, 8, 9}) =>
 {7, 4, 1, 8, 5, 2, 9, 6, 3} =#
-function thread3(inList1::List{T}, inList2::List{T}, inList3::List{T})  where {T}
-  local outList::List{T} = nil
+function thread3(inList1::List, inList2::List, inList3::List)
+  local outList::List = nil
 
-  local e2::T
-  local e3::T
-  local rest_e2::List{T} = inList2
-  local rest_e3::List{T} = inList3
+  local e2
+  local e3
+  local rest_e2::List = inList2
+  local rest_e3::List = inList3
 
   for e1 in inList1
     @match _cons(e2, rest_e2) = rest_e2
@@ -3448,8 +3392,8 @@ end
 consisting of the two element types.
 Example: threadTuple({1, 2, 3}, {true, false, true}) =>
 {(1, true), (2, false), (3, true)} =#
-function threadTuple(inList1::List{T1}, inList2::List{T2})  where {T1, T2}
-  local outTuples::List{Tuple{T1, T2}}
+function threadTuple(inList1::List, inList2::List)
+  local outTuples::List{Tuple}
 
   outTuples = list(@do_threaded_for (e1, e2) (e1, e2) (inList1, inList2))
   outTuples
@@ -3475,8 +3419,8 @@ end
 #= Takes a list of two-element tuples and splits the tuples into two separate
 lists. Example: unzip({(1, 2), (3, 4)}) => ({1, 3}, {2, 4}) =#
 function unzip(inTuples::List{Tuple{T1, T2}})  where {T1, T2}
-  local outList2::List{T2} = nil
-  local outList1::List{T1} = nil
+  local outList2::List = nil
+  local outList1::List = nil
 
   local e1::T1
   local e2::T2
@@ -3493,8 +3437,8 @@ end
 
 """ Like unzip, but returns the lists in reverse order. """
 function unzipReverse(inTuples::List{Tuple{T1, T2}})  where {T1, T2}
-  local outList2::List{T2} = nil
-  local outList1::List{T1} = nil
+  local outList2::List = nil
+  local outList1::List = nil
 
   local e1::T1
   local e2::T2
@@ -3564,8 +3508,8 @@ end
 
 #= Takes three lists and threads (interleaves) the arguments into a list of tuples
 consisting of the three element types. =#
-function thread3Tuple(inList1::List{T1}, inList2::List{T2}, inList3::List{T3})  where {T1, T2, T3}
-  local outTuples::List{Tuple{T1, T2, T3}}
+function thread3Tuple(inList1::List, inList2::List, inList3::List)
+  local outTuples::List{Tuple}
 
   outTuples = list(@do_threaded_for (e1, e2, e3) (e1, e2, e3) (inList1, inList2, inList3))
   outTuples
@@ -3573,8 +3517,8 @@ end
 
 #= Takes three lists and threads (interleaves) the arguments into a list of tuples
 consisting of the four element types. =#
-function thread4Tuple(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inList4::List{T4})  where {T1, T2, T3, T4}
-  local outTuples::List{Tuple{T1, T2, T3, T4}}
+function thread4Tuple(inList1::List, inList2::List, inList3::List, inList4::List)
+  local outTuples::List{Tuple}
 
   outTuples = list(@do_threaded_for (e1, e2, e3, e4) (e1, e2, e3, e4) (inList1, inList2, inList3, inList4))
   outTuples
@@ -3582,8 +3526,8 @@ end
 
 #= Takes three lists and threads (interleaves) the arguments into a list of tuples
 consisting of the five element types. =#
-function thread5Tuple(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inList4::List{T4}, inList5::List{T5})  where {T1, T2, T3, T4, T5}
-  local outTuples::List{Tuple{T1, T2, T3, T4, T5}}
+function thread5Tuple(inList1::List, inList2::List, inList3::List, inList4::List, inList5::List)
+  local outTuples::List{Tuple}
 
   outTuples = list(@do_threaded_for (e1, e2, e3, e4, e5) (e1, e2, e3, e4, e5) (inList1, inList2, inList3, inList4, inList5))
   outTuples
@@ -3592,7 +3536,7 @@ end
 #= Takes two lists and a function and threads (interleaves) and maps the
 elements of two lists, creating a new list.
 Example: threadMap({1, 2}, {3, 4}, intAdd) => {1+3, 2+4} =#
-function threadMap(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, ::Type{TO} = Any) where {T1, T2, TO, F<:Function}
+function threadMap(inList1::List, inList2::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inMapFunc(e1, e2) (e1, e2) (inList1, inList2))
@@ -3603,7 +3547,7 @@ end
 elements of two lists, creating a new list. The order of the result list
 will be reversed compared to the input lists.
 Example: threadMap({1, 2}, {3, 4}, intAdd) => {2+4, 1+3} =#
-function threadMapReverse(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, ::Type{TO} = Any) where {T1, T2, TO, F<:Function}
+function threadMapReverse(inList1::List, inList2::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List
 
   outList = listReverse(list(@do_threaded_for inMapFunc(e1, e2) (e1, e2) (inList1, inList2)))
@@ -3611,12 +3555,12 @@ function threadMapReverse(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, ::
 end
 
 """ Like threadMap, but returns two lists instead of one. """
-function threadMap_2(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any) where {T1, T2, TO1, TO2, F<:Function}
+function threadMap_2(inList1::List, inList2::List, inMapFunc::F, ::Type{TO1} = Any, ::Type{TO2} = Any) where {TO1, TO2, F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
-  local e2::T2
-  local rest_e2::List{T2} = inList2
+  local e2
+  local rest_e2::List = inList2
   local ret1::TO1
   local ret2::TO2
 
@@ -3678,12 +3622,12 @@ elements of two lists, and checks if the result is the same as the given
 value.
 Example: threadMapAllValue({true, true}, {false, true}, boolAnd, true) =>
 fail =#
-function threadMapAllValue(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inValue::VT) where {T1, T2, VT, F<:Function}
+function threadMapAllValue(inList1::List, inList2::List, inMapFunc::F, inValue::VT) where {VT, F<:Function}
   _ = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res::Any
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -3703,7 +3647,7 @@ end
 #= Takes two lists and a function and threads (interleaves) and maps the
 elements of two lists, creating a new list. This function also takes an
 extra arguments that are passed to the mapping function. =#
-function threadMap1(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1) where {T1, T2, ArgT1, F<:Function}
+function threadMap1(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inMapFunc(e1, e2, inArg1) (e1, e2) (inList1, inList2))
@@ -3714,7 +3658,7 @@ end
 elements of two lists, creating a new list. This function also takes an
 extra arguments that are passed to the mapping function. The order of the
 result list will be reversed compared to the input lists. =#
-function threadMap1Reverse(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1) where {T1, T2, ArgT1, F<:Function}
+function threadMap1Reverse(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local outList::List
 
   outList = listReverse(list(@do_threaded_for inMapFunc(e1, e2, inArg1) (e1, e2) (inList1, inList2)))
@@ -3724,12 +3668,12 @@ end
 #= Takes two lists and a function, and applies the function to each element of
 the lists in a pairwise fashion. This function also takes an extra argument
 which is passed to the mapping function, but returns no result. =#
-function threadMap1_0(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1) where {T1, T2, ArgT1, F<:Function}
+function threadMap1_0(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   _ = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     @match (inList1, inList2, inMapFunc, inArg1) begin
       ( nil(),  nil(), _, _)  => begin
         ()
@@ -3747,7 +3691,7 @@ end
 #= Takes two lists and a function and threads (interleaves) and maps the
 elements of two lists, creating a new list. This function also takes two
 extra arguments that are passed to the mapping function. =#
-function threadMap2(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {T1, T2, ArgT1, ArgT2, F<:Function}
+function threadMap2(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inMapFunc(e1, e2, inArg1, inArg2) (e1, e2) (inList1, inList2))
@@ -3758,7 +3702,7 @@ end
 elements of two lists, creating a new list. This function also takes two
 extra arguments that are passed to the mapping function. The order of the
 result list will be reversed compared to the input lists. =#
-function threadMap2Reverse(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {T1, T2, ArgT1, ArgT2, F<:Function}
+function threadMap2Reverse(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
   local outList::List
 
   outList = listReverse(list(@do_threaded_for inMapFunc(e1, e2, inArg1, inArg2) (e1, e2) (inList1, inList2)))
@@ -3769,16 +3713,16 @@ end
 elements of two lists, creating a new list. This function also takes two
 extra arguments and a fold argument that are passed to the mapping function.
 The order of the result list will be reversed compared to the input lists. =#
-function threadMap2ReverseFold(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inFoldArg::FT, inAccum::List{TO} = nil) where {T1, T2, TO, FT, ArgT1, ArgT2, F<:Function}
+function threadMap2ReverseFold(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inFoldArg::FT, inAccum::List = nil) where {FT, ArgT1, ArgT2, F<:Function}
   local outFoldArg
   local outList::List
 
   (outList, outFoldArg) = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
-    local res::TO
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
+    local res
     local foldArg::FT
     @match (inList1, inList2) begin
       ( nil(),  nil())  => begin
@@ -3798,7 +3742,7 @@ end
 #= Takes two lists and a function and threads (interleaves) and maps the
 elements of two lists, creating a new list. This function also takes three
 extra arguments that are passed to the mapping function. =#
-function threadMap3(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {T1, T2, ArgT1, ArgT2, ArgT3, F<:Function}
+function threadMap3(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {ArgT1, ArgT2, ArgT3, F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inMapFunc(e1, e2, inArg1, inArg2, inArg3) (e1, e2) (inList1, inList2))
@@ -3808,7 +3752,7 @@ end
 #= Takes two lists and a function and threads (interleaves) and maps the
 elements of two lists, creating a new list. This function also takes three
 extra arguments that are passed to the mapping function. =#
-function threadMap3Reverse(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {T1, T2, ArgT1, ArgT2, ArgT3, F<:Function}
+function threadMap3Reverse(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {ArgT1, ArgT2, ArgT3, F<:Function}
   local outList::List
 
   outList = listReverse(list(@do_threaded_for inMapFunc(e1, e2, inArg1, inArg2, inArg3) (e1, e2) (inList1, inList2)))
@@ -3818,7 +3762,7 @@ end
 #= Takes three lists and a function, and threads (interleaves) and maps the
 elements of the three lists, creating a new list.
 Example: thread3Map({1, 2}, {3, 4}, {5, 6}, intAdd3) => {1+3+5, 2+4+6} =#
-function thread3Map(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inFunc::F) where {T1, T2, T3, F<:Function}
+function thread3Map(inList1::List, inList2::List, inList3::List, inFunc::F) where {F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inFunc(e1, e2, e3) (e1, e2, e3) (inList1, inList2, inList3))
@@ -3829,16 +3773,16 @@ end
 elements of two lists, creating a new list. This function also takes three
 extra arguments and a fold argument that are passed to the mapping function.
 The order of the result list will be reversed compared to the input lists. =#
-function threadMap3ReverseFold(inList1::List{T1}, inList2::List{T2}, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inFoldArg::FT, inAccum::List{TO} = nil) where {T1, T2, TO, FT, ArgT1, ArgT2, ArgT3, F<:Function}
+function threadMap3ReverseFold(inList1::List, inList2::List, inMapFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inFoldArg::FT, inAccum::List = nil) where {FT, ArgT1, ArgT2, ArgT3, F<:Function}
   local outFoldArg
   local outList::List
 
   (outList, outFoldArg) = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
-    local res::TO
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
+    local res
     local foldArg::FT
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -3859,14 +3803,14 @@ end
 elements of the three lists, creating two new list.
 Example: thread3Map({1, 2}, {3, 4}, {5, 6}, intAddSub3) =>
 ({1+3+5, 2+4+6}, {1-3-5, 2-4-6}) =#
-function thread3Map_2(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inFunc::F) where {T1, T2, T3, F<:Function}
+function thread3Map_2(inList1::List, inList2::List, inList3::List, inFunc::F) where {F<:Function}
   local outList2::List = nil
   local outList1::List = nil
 
-  local e2::T2
-  local rest_e2::List{T2} = inList2
-  local e3::T3
-  local rest_e3::List{T3} = inList3
+  local e2
+  local rest_e2::List = inList2
+  local e3
+  local rest_e3::List = inList3
   local res1::Any
   local res2::Any
 
@@ -3887,14 +3831,14 @@ end
 #= Takes three lists and a function, and threads (interleaves) and maps the
 elements of the three lists, creating a new list. This function also takes
 one extra argument which are passed to the mapping function and fold. =#
-function thread3MapFold(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inFunc::F, inArg::ArgT1) where {T1, T2, T3, ArgT1, F<:Function}
+function thread3MapFold(inList1::List, inList2::List, inList3::List, inFunc::F, inArg::ArgT1) where {ArgT1, F<:Function}
   local outArg::ArgT1 = inArg
   local outList::List = nil
 
-  local e2::T2
-  local rest_e2::List{T2} = inList2
-  local e3::T3
-  local rest_e3::List{T3} = inList3
+  local e2
+  local rest_e2::List = inList2
+  local e3
+  local rest_e3::List = inList3
   local res::Any
 
   for e1 in inList1
@@ -3912,7 +3856,7 @@ end
 #= Takes three lists and a function, and threads (interleaves) and maps the
 elements of the three lists, creating a new list. This function also takes
 three extra arguments which are passed to the mapping function. =#
-function thread3Map3(inList1::List{T1}, inList2::List{T2}, inList3::List{T3}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {T1, T2, T3, ArgT1, ArgT2, ArgT3, F<:Function}
+function thread3Map3(inList1::List, inList2::List, inList3::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {ArgT1, ArgT2, ArgT3, F<:Function}
   local outList::List
 
   outList = list(@do_threaded_for inFunc(e1, e2, e3, inArg1, inArg2, inArg3) (e1, e2, e3) (inList1, inList2, inList3))
@@ -3922,14 +3866,14 @@ end
 #= This is a combination of thread and fold that applies a function to the head
 of two lists with an extra argument that is updated and passed on. This
 function also takes an extra constant argument that is passed to the function. =#
-function threadFold1(inList1::List{T1}, inList2::List{T2}, inFoldFunc::F, inArg1::ArgT1, inFoldArg::FT) where {T1, T2, FT, ArgT1, F<:Function}
+function threadFold1(inList1::List, inList2::List, inFoldFunc::F, inArg1::ArgT1, inFoldArg::FT) where {FT, ArgT1, F<:Function}
   local outFoldArg
 
   outFoldArg = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -3948,14 +3892,14 @@ end
 #= This is a combination of thread and fold that applies a function to the head
 of two lists with an extra argument that is updated and passed on. This
 function also takes two extra constant arguments that is passed to the function. =#
-function threadFold2(inList1::List{T1}, inList2::List{T2}, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inFoldArg::FT) where {T1, T2, FT, ArgT1, ArgT2, F<:Function}
+function threadFold2(inList1::List, inList2::List, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inFoldArg::FT) where {FT, ArgT1, ArgT2, F<:Function}
   local outFoldArg
 
   outFoldArg = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -3974,14 +3918,14 @@ end
 #= This is a combination of thread and fold that applies a function to the head
 of two lists with an extra argument that is updated and passed on. This
 function also takes three extra constant arguments that is passed to the function. =#
-function threadFold3(inList1::List{T1}, inList2::List{T2}, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inFoldArg::FT) where {T1, T2, FT, ArgT1, ArgT2, ArgT3, F<:Function}
+function threadFold3(inList1::List, inList2::List, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inFoldArg::FT) where {FT, ArgT1, ArgT2, ArgT3, F<:Function}
   local outFoldArg
 
   outFoldArg = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -4000,14 +3944,14 @@ end
 #= This is a combination of thread and fold that applies a function to the head
 of two lists with an extra argument that is updated and passed on. This
 function also takes four extra constant arguments that is passed to the function. =#
-function threadFold4(inList1::List{T1}, inList2::List{T2}, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inFoldArg::FT) where {T1, T2, FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
+function threadFold4(inList1::List, inList2::List, inFoldFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3, inArg4::ArgT4, inFoldArg::FT) where {FT, ArgT1, ArgT2, ArgT3, ArgT4, F<:Function}
   local outFoldArg
 
   outFoldArg = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -4025,14 +3969,14 @@ end
 
 #= This is a combination of thread and fold that applies a function to the head
 of two lists with an extra argument that is updated and passed on. =#
-function threadFold(inList1::List{T1}, inList2::List{T2}, inFoldFunc::F, inFoldArg::FT) where {T1, T2, FT, F<:Function}
+function threadFold(inList1::List, inList2::List, inFoldFunc::F, inFoldArg::FT) where {FT, F<:Function}
   local outFoldArg
 
   outFoldArg = begin
-    local e1::T1
-    local rest1::List{T1}
-    local e2::T2
-    local rest2::List{T2}
+    local e1
+    local rest1::List
+    local e2
+    local rest2::List
     local res
     @match (inList1, inList2) begin
       (e1 <| rest1, e2 <| rest2)  => begin
@@ -4051,12 +3995,12 @@ end
 #= Takes a list, an extra argument and a function. The function will be applied
 to each element in the list, and the extra argument will be passed to the
 function and updated. =#
-function threadMapFold(inList1::List{T1}, inList2::List{T2}, inFunc::F, inArg::FT) where {T1, T2, FT, F<:Function}
+function threadMapFold(inList1::List, inList2::List, inFunc::F, inArg::FT) where {FT, F<:Function}
   local outArg = inArg
   local outList::List = nil
 
-  local e2::T2
-  local rest_e2::List{T2} = inList2
+  local e2
+  local rest_e2::List = inList2
   local res::Any
 
   for e1 in inList1
@@ -4087,7 +4031,7 @@ end
 
 #= Takes a list and a predicate function, and returns the index of the first
 element for which the function returns true, or -1 if no match is found. =#
-function positionOnTrue(inList::List{T}, inPredFunc::F) where {T, F<:Function}
+function positionOnTrue(inList::List, inPredFunc::F) where {F<:Function}
   local outPosition::ModelicaInteger = 1
 
   for e in inList
@@ -4104,7 +4048,7 @@ end
 index of the first element for which the function returns true, or -1 if no
 match is found. The extra argument is passed to the predicate function for
 each call. =#
-function position1OnTrue(inList::List{T}, inPredFunc::F, inArg::ArgT) where {T, ArgT, F<:Function}
+function position1OnTrue(inList::List, inPredFunc::F, inArg::ArgT) where {ArgT, F<:Function}
   local outPosition::ModelicaInteger = 1
 
   for e in inList
@@ -4166,8 +4110,8 @@ true) the value is returned, otherwise the function fails.
 Example:
 function equalLength(string,string) returns true if the strings are of same length
 getMemberOnTrue(\\\"a\\\",{\\\"bb\\\",\\\"b\\\",\\\"ccc\\\"},equalLength) => \\\"b\\\" =#
-function getMemberOnTrue(inValue::VT, inList::List{T}, inCompFunc::F) where {T, VT, F<:Function}
-  local outElement::T
+function getMemberOnTrue(inValue::VT, inList::List, inCompFunc::F) where {VT, F<:Function}
+  local outElement
 
   for e in inList
     if inCompFunc(inValue, e)
@@ -4189,7 +4133,7 @@ end
 
 #= Returns true if the given value is a member of the list, as determined by the
 comparison function given. =#
-function isMemberOnTrue(inValue::VT, inList::List{T}, inCompFunc::F) where {T, VT, F<:Function}
+function isMemberOnTrue(inValue::VT, inList::List, inCompFunc::F) where {VT, F<:Function}
   local outIsMember::Bool
 
   for e in inList
@@ -4207,7 +4151,7 @@ the given predicate function.
 Example:
 exist({1,2}, isEven) => true
 exist({1,3,5,7}, isEven) => false =#
-function exist(inList::List{T}, inFindFunc::F) where {T, F<:Function}
+function exist(inList::List, inFindFunc::F) where {F<:Function}
   local outExists::Bool
 
   for e in inList
@@ -4223,7 +4167,7 @@ end
 #= Returns true if a certain element exists in the given list as indicated by
 the given predicate function. Also takes an extra argument that is passed to
 the predicate function. =#
-function exist1(inList::List{T}, inFindFunc::F, inExtraArg::ArgT1) where {T, ArgT1, F<:Function}
+function exist1(inList::List, inFindFunc::F, inExtraArg::ArgT1) where {ArgT1, F<:Function}
   local outExists::Bool
 
   for e in inList
@@ -4239,7 +4183,7 @@ end
 #= Returns true if a certain element exists in the given list as indicated by
 the given predicate function. Also takes two extra arguments that is passed
 to the predicate function. =#
-function exist2(inList::List{T}, inFindFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2) where {T, ArgT1, ArgT2, F<:Function}
+function exist2(inList::List, inFindFunc::F, inExtraArg1::ArgT1, inExtraArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
   local outExists::Bool
 
   for e in inList
@@ -4257,9 +4201,9 @@ two lists. One of values for which the matching function returns true and the
 other containing the remaining elements.
 Example:
 extractOnTrue({1, 2, 3, 4, 5}, isEven) => {2, 4}, {1, 3, 5} =#
-function extractOnTrue(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outRemainingList::List{T} = nil
-  local outExtractedList::List{T} = nil
+function extractOnTrue(inList::List, inFilterFunc::F) where {F<:Function}
+  local outRemainingList::List = nil
+  local outExtractedList::List = nil
 
   for e in inList
     if inFilterFunc(e)
@@ -4276,9 +4220,9 @@ end
 #= Takes a list of values and a filter function over the values and an extra
 argument and returns two lists. One of values for which the matching function
 returns true and the other containing the remaining elements. =#
-function extract1OnTrue(inList::List{T}, inFilterFunc::F, inArg::ArgT1) where {T, ArgT1, F<:Function}
-  local outRemainingList::List{T} = nil
-  local outExtractedList::List{T} = nil
+function extract1OnTrue(inList::List, inFilterFunc::F, inArg::ArgT1) where {ArgT1, F<:Function}
+  local outRemainingList::List = nil
+  local outExtractedList::List = nil
 
   for e in inList
     if inFilterFunc(e, inArg)
@@ -4296,8 +4240,8 @@ end
 sub list of values for which the matching function succeeds.
 Example:
 filter({1, 2, 3, 4, 5}, isEven) => {2, 4} =#
-function filter(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outList::List{T} = nil
+function filter(inList::List, inFilterFunc::F) where {F<:Function}
+  local outList::List = nil
 
   for e in inList
     try
@@ -4312,7 +4256,7 @@ end
 
 #= Applies a function to each element in the given list, but also filters out
 all elements for which the function fails. =#
-function filterMap(inList::List{TI}, inFilterMapFunc::F) where {TI, F<:Function}
+function filterMap(inList::List, inFilterMapFunc::F) where {F<:Function}
   local outList::List = nil
 
   local oe::Any
@@ -4330,7 +4274,7 @@ end
 
 #= Applies a function to each element in the given list, but also filters out
 all elements for which the function fails. =#
-function filterMap1(inList::List{TI}, inFilterMapFunc::F, inExtraArg::ArgT1) where {TI, ArgT1, F<:Function}
+function filterMap1(inList::List, inFilterMapFunc::F, inExtraArg::ArgT1) where {ArgT1, F<:Function}
   local outList::List = nil
 
   local oe::Any
@@ -4350,8 +4294,8 @@ end
 sub list of values for which the matching function returns true.
 Example:
 filter({1, 2, 3, 4, 5}, isEven) => {2, 4} =#
-function filterOnTrue(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outList::List{T}
+function filterOnTrue(inList::List, inFilterFunc::F) where {F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if inFilterFunc(e))
   outList
@@ -4361,8 +4305,8 @@ end
 sub list of values for which the matching function returns false.
 Example:
 filterOnFalse({1, 2, 3, 1, 5}, isEven) => {1, 3, 1, 5} =#
-function filterOnFalse(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outList::List{T}
+function filterOnFalse(inList::List, inFilterFunc::F) where {F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if boolNot(inFilterFunc(e)))
   outList
@@ -4373,12 +4317,12 @@ Takes 2 list of values and a filter function and an extra argument over the valu
 sub list of values for both lists for which the matching function returns true for the first list.
 Example:
 filter({1, 2, 3, 4, 5}, isEven) => {2, 4} =#
-function filter1OnTrueSync(inList::List{T1}, inFilterFunc::F, inArg1::ArgT1, inSyncList::List{T2}) where {T1, T2, ArgT1, F<:Function}
-  local outList_b::List{T2} = nil
-  local outList_a::List{T1} = nil
+function filter1OnTrueSync(inList::List, inFilterFunc::F, inArg1::ArgT1, inSyncList::List) where {ArgT1, F<:Function}
+  local outList_b::List = nil
+  local outList_a::List = nil
 
-  local e2::T2
-  local rest2::List{T2} = inSyncList
+  local e2
+  local rest2::List = inSyncList
 
   for e1 in inList
     @match _cons(e2, rest2) = rest2
@@ -4396,12 +4340,12 @@ end
 Takes 2 list of values and a filter function over the values of the first
 list and returns a sub list of values for both lists for which the matching
 function returns true for the first list. =#
-function filterOnTrueSync(inList::List{T1}, inFilterFunc::F, inSyncList::List{T2}) where {T1, T2, F<:Function}
-  local outList_b::List{T2} = nil
-  local outList_a::List{T1} = nil
+function filterOnTrueSync(inList::List, inFilterFunc::F, inSyncList::List) where {F<:Function}
+  local outList_b::List = nil
+  local outList_a::List = nil
 
-  local e2::T2
-  local rest2::List{T2} = inSyncList
+  local e2
+  local rest2::List = inSyncList
 
   @match true = listLength(inList) == listLength(inSyncList)
   for e1 in inList
@@ -4420,8 +4364,8 @@ end
 sub list of values in reverse order for which the matching function returns true.
 Example:
 filter({1, 2, 3, 4, 5}, isEven) => {4, 2} =#
-function filterOnTrueReverse(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outList::List{T}
+function filterOnTrueReverse(inList::List, inFilterFunc::F) where {F<:Function}
+  local outList::List
 
   outList = listReverse(list(e for e in inList if inFilterFunc(e)))
   outList
@@ -4432,8 +4376,8 @@ argument, and returns a sub list of values for which the matching function
 succeeds.
 Example:
 filter({1, 2, 3, 4, 5}, isEven) => {2, 4} =#
-function filter1(inList::List{T}, inFilterFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outList::List{T} = nil
+function filter1(inList::List, inFilterFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
+  local outList::List = nil
 
   for e in inList
     try
@@ -4450,8 +4394,8 @@ end
 sub list of values for which the matching function returns true.
 Example:
 filter1OnTrue({1, 2, 3, 1, 5}, intEq, 1) => {1, 1} =#
-function filter1OnTrue(inList::List{T}, inFilterFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outList::List{T}
+function filter1OnTrue(inList::List, inFilterFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if inFilterFunc(e, inArg1))
   outList
@@ -4462,8 +4406,8 @@ sub list of values for which the matching function returns true. The
 matching function may update the values.
 Example:
 filter1OnTrue({1, 2, 3, 1, 5}, intEq, 1) => {1, 1} =#
-function filter1OnTrueAndUpdate(inList::List{T}, inFilterFunc::F1, inUpdateFunc::F2, inArg1::ArgT1) where {T, ArgT1, F1<:Function, F2<:Function}
-  local outList::List{T}
+function filter1OnTrueAndUpdate(inList::List, inFilterFunc::F1, inUpdateFunc::F2, inArg1::ArgT1) where {ArgT1, F1<:Function, F2<:Function}
+  local outList::List
 
   outList = list(inUpdateFunc(e, inArg1) for e in inList if inFilterFunc(e, inArg1))
   outList
@@ -4473,8 +4417,8 @@ end
 sub list of values for which the matching function returns true.
 Example:
 filter1rOnTrue({1, 2, 3, 1, 5}, intEq, 1) => {1, 1} =#
-function filter1rOnTrue(inList::List{T}, inFilterFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outList::List{T}
+function filter1rOnTrue(inList::List, inFilterFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if inFilterFunc(inArg1, e))
   outList
@@ -4482,8 +4426,8 @@ end
 
 #= Takes a list of values and a filter function over the values and returns a
 sub list of values for which the matching function returns true. =#
-function filter2OnTrue(inList::List{T}, inFilterFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {T, ArgT1, ArgT2, F<:Function}
-  local outList::List{T}
+function filter2OnTrue(inList::List, inFilterFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if inFilterFunc(e, inArg1, inArg2))
   outList
@@ -4491,8 +4435,8 @@ end
 
 #= Goes through a list and removes all elements which are equal to the given
 value, using the given comparison function. =#
-function removeOnTrue(inValue::VT, inCompFunc::F, inList::List{T}) where {T, VT, F<:Function}
-  local outList::List{T}
+function removeOnTrue(inValue::VT, inCompFunc::F, inList::List) where {VT, F<:Function}
+  local outList::List
 
   outList = list(e for e in inList if ! inCompFunc(inValue, e))
   outList
@@ -4505,8 +4449,8 @@ select2 = filter2OnTrue
 
 #= This function retrieves the first element of a list for which the passed
 function evaluates to true. =#
-function find(inList::List{T}, inFunc::F) where {T, F<:Function}
-  local outElement::T
+function find(inList::List, inFunc::F) where {F<:Function}
+  local outElement
 
   for e in inList
     if inFunc(e)
@@ -4520,8 +4464,8 @@ end
 
 #= This function retrieves the first element of a list for which the passed
 function evaluates to true. =#
-function find1(inList::List{T}, inFunc::F, arg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outElement::T
+function find1(inList::List, inFunc::F, arg1::ArgT1) where {ArgT1, F<:Function}
+  local outElement
 
   for e in inList
     if inFunc(e, arg1)
@@ -4535,18 +4479,18 @@ end
 
 #= This function retrieves the first element of a list for which the passed
 function evaluates to true. And returns the list with the element removed. =#
-function findAndRemove(inList::List{T}, inFunc::F) where {T, F<:Function}
-  local rest::List{T}
-  local outElement::T
+function findAndRemove(inList::List, inFunc::F) where {F<:Function}
+  local rest::List
+  local outElement
 
   local i::ModelicaInteger = 0
-  local delst::DoubleEnded.MutableList{T}
-  local t::T
+  local delst::DoubleEnded.MutableList
+  local t
 
   for e in inList
     if inFunc(e)
       outElement = e
-      delst = DoubleEnded.MutableList{T}()
+      delst = DoubleEnded.MutableList()
       rest = inList
       for i in 1:i
         @match _cons(t, rest) = rest
@@ -4564,18 +4508,18 @@ end
 
 #= This function retrieves the first element of a list for which the passed
 function evaluates to true. And returns the list with the element removed. =#
-function findAndRemove1(inList::List{T}, inFunc::F, arg1::ArgT1) where {T, ArgT1, F<:Function}
-  local rest::List{T}
-  local outElement::T
+function findAndRemove1(inList::List, inFunc::F, arg1::ArgT1) where {ArgT1, F<:Function}
+  local rest::List
+  local outElement
 
   local i::ModelicaInteger = 0
-  local delst::DoubleEnded.MutableList{T}
-  local t::T
+  local delst::DoubleEnded.MutableList
+  local t
 
   for e in inList
     if inFunc(e, arg1)
       outElement = e
-      delst = DoubleEnded.MutableList{T}()
+      delst = DoubleEnded.MutableList()
       rest = inList
       for i in 1:i
         @match _cons(t, rest) = rest
@@ -4613,7 +4557,7 @@ end
 #= Takes a list and a value, and deletes the first occurence of the value in the
 list. Example: deleteMember({1, 2, 3, 2}, 2) => {1, 3, 2} =#
 function deleteMember(inList::List{T}, inElement::T)  where {T}
-  local outList::List{T} = nil
+  local outList::List = nil
 
   local e::T
   local rest::List{T} = inList
@@ -4646,13 +4590,13 @@ occurence of the value in the list for which the function returns true. It
 returns the new list and the deleted element, or only the original list if
 no element was removed.
 Example: deleteMemberOnTrue({1,2,3,2},2,intEq) => {1,3,2} =#
-function deleteMemberOnTrue(inValue::VT, inList::List{T}, inCompareFunc::F) where {T, VT, F<:Function}
-  local outDeletedElement::Option{T} = NONE()
-  local outList::List{T} = inList
+function deleteMemberOnTrue(inValue::VT, inList::List, inCompareFunc::F) where {VT, F<:Function}
+  local outDeletedElement::Option = NONE()
+  local outList::List = inList
 
-  local e::T
-  local rest::List{T} = inList
-  local acc::List{T} = nil
+  local e
+  local rest::List = inList
+  local acc::List = nil
 
   while ! listEmpty(rest)
     @match _cons(e, rest) = rest
@@ -4669,8 +4613,8 @@ end
 #= Takes a list and a list of positions, and deletes the positions from the
 list. Note that positions are indexed from 0.
 Example: deletePositions({1, 2, 3, 4, 5}, {2, 0, 3}) => {2, 5} =#
-function deletePositions(inList::List{T}, inPositions::List{ModelicaInteger})  where {T}
-  local outList::List{T}
+function deletePositions(inList::List, inPositions::List{ModelicaInteger})
+  local outList::List
 
   local sorted_pos::List{ModelicaInteger}
 
@@ -4682,12 +4626,12 @@ end
 #= Takes a list and a sorted list of positions (smallest index first), and
 deletes the positions from the list. Note that positions are indexed from 0.
 Example: deletePositionsSorted({1, 2, 3, 4, 5}, {0, 2, 3}) => {2, 5} =#
-function deletePositionsSorted(inList::List{T}, inPositions::List{ModelicaInteger})  where {T}
-  local outList::List{T} = nil
+function deletePositionsSorted(inList::List, inPositions::List{ModelicaInteger})
+  local outList::List = nil
 
   local i::ModelicaInteger = 0
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   for pos in inPositions
     while i != pos
@@ -4780,11 +4724,11 @@ end
 position with the first list in the second list. Position is an integer
 between 0 and n - 1 for a list of n elements.
 Example: replaceAt({'A', 'B'}, 1, {'a', 'b', 'c'}) => {'a', 'A', 'B', 'c'} =#
-function replaceAtWithList(inReplacementList::List{T}, inPosition::ModelicaInteger, inList::List{T})  where {T}
-  local outList::List{T} = nil
+function replaceAtWithList(inReplacementList::List, inPosition::ModelicaInteger, inList::List)
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   @match true = inPosition >= 0
   #=  Shuffle elements from inList to outList until the position is reached.
@@ -4837,7 +4781,7 @@ the string. Ex:
 toString({1, 2, 3}, intString, 'nums', '{', ';', '}, true) =>
 'nums{1;2;3}'
 =#
-function toString(inList::List{T}, inPrintFunc::F, inListNameStr::String #= The name of the list. =#, inBeginStr::String #= The start of the list =#, inDelimitStr::String #= The delimiter between list elements. =#, inEndStr::String #= The end of the list. =#, inPrintEmpty::Bool #= If false, don't output begin and end if the list is empty. =#) where {T, F<:Function}
+function toString(inList::List, inPrintFunc::F, inListNameStr::String #= The name of the list. =#, inBeginStr::String #= The start of the list =#, inDelimitStr::String #= The delimiter between list elements. =#, inEndStr::String #= The end of the list. =#, inPrintEmpty::Bool #= If false, don't output begin and end if the list is empty. =#) where {F<:Function}
   local outString::String
 
   outString = begin
@@ -4869,7 +4813,7 @@ end
 
 #= @author:adrpo
 returns true if the list has exactly one element, otherwise false =#
-function hasOneElement(inList::List{T})  where {T}
+function hasOneElement(inList::List)
   local b::Bool
 
   b = begin
@@ -4888,7 +4832,7 @@ end
 
 #= author:waurich
 returns true if the list has more than one element, otherwise false =#
-function hasSeveralElements(inList::List{T})  where {T}
+function hasSeveralElements(inList::List)
   local b::Bool
 
   b = begin
@@ -4943,7 +4887,7 @@ function generateReverse(inArg::ArgT1, inFunc::F) where {ArgT1, F<:Function}
 end
 
 """ Like mapFold, but with the function split into a map and a fold function. """
-function mapFoldSplit(inList::List{TI}, inMapFunc::F1, inFoldFunc::F2, inStartValue::FT) where {TI, FT, F1<:Function, F2<:Function}
+function mapFoldSplit(inList::List, inMapFunc::F1, inFoldFunc::F2, inStartValue::FT) where {FT, F1<:Function, F2<:Function}
   local outResult = inStartValue
   local outList::List = nil
 
@@ -4960,7 +4904,7 @@ function mapFoldSplit(inList::List{TI}, inMapFunc::F1, inFoldFunc::F2, inStartVa
 end
 
 """ Like map1Fold, but with the function split into a map and a fold function. """
-function map1FoldSplit(inList::List{TI}, inMapFunc::F1, inFoldFunc::F2, inConstArg::ArgT1, inStartValue::FT) where {TI, FT, ArgT1, F1<:Function, F2<:Function}
+function map1FoldSplit(inList::List, inMapFunc::F1, inFoldFunc::F2, inConstArg::ArgT1, inStartValue::FT) where {FT, ArgT1, F1<:Function, F2<:Function}
   local outResult = inStartValue
   local outList::List = nil
 
@@ -4979,7 +4923,7 @@ end
 #= Takes a list and a function. The function is applied to each element in the
 list, and the function is itself responsible for adding elements to the
 result list. =#
-function accumulateMapReverse(inList::List{TI}, inMapFunc::F) where {TI, F<:Function}
+function accumulateMapReverse(inList::List, inMapFunc::F) where {F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -4991,7 +4935,7 @@ end
 #= Takes a list, a function and a result list. The function is applied to each
 element of the list, and the function is itself responsible for adding
 elements to the result list. =#
-function accumulateMapAccum(inList::List{TI}, inMapFunc::F) where {TI, F<:Function}
+function accumulateMapAccum(inList::List, inMapFunc::F) where {F<:Function}
   local outList::List = nil
   for e in inList
     outList = inMapFunc(e, outList)
@@ -5005,7 +4949,7 @@ const accumulateMap = accumulateMapAccum
 #= Takes a list, a function, an extra argument, and a result list. The function
 is applied to each element of the list, and the function is itself responsible
 for adding elements to the result list. =#
-function accumulateMapAccum1(inList::List{TI}, inMapFunc::F, inArg::ArgT1) where {TI, ArgT1, F<:Function}
+function accumulateMapAccum1(inList::List, inMapFunc::F, inArg::ArgT1) where {ArgT1, F<:Function}
   local outList::List = nil
 
   for e in inList
@@ -5015,7 +4959,7 @@ function accumulateMapAccum1(inList::List{TI}, inMapFunc::F, inArg::ArgT1) where
   outList
 end
 
-function accumulateMapFoldAccum(inList::List{TI}, inFunc::F, inFoldArg::FT) where {TI, FT, F<:Function}
+function accumulateMapFoldAccum(inList::List, inFunc::F, inFoldArg::FT) where {FT, F<:Function}
   local outFoldArg = inFoldArg
   local outList::List = nil
 
@@ -5042,12 +4986,12 @@ end
 #= Same as map, but stops when it find a certain element as indicated by the
 mapping function. Returns the new list, and whether the element was found or
 not. =#
-function findMap(inList::List{T}, inFunc::F) where {T, F<:Function}
+function findMap(inList::List, inFunc::F) where {F<:Function}
   local outFound::Bool = false
-  local outList::List{T} = nil
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest) && ! outFound
     @match _cons(e, rest) = rest
@@ -5061,12 +5005,12 @@ end
 #= Same as map1, but stops when it find a certain element as indicated by the
 mapping function. Returns the new list, and whether the element was found or
 not. =#
-function findMap1(inList::List{T}, inFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
+function findMap1(inList::List, inFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
   local outFound::Bool = false
-  local outList::List{T} = nil
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest) && ! outFound
     @match _cons(e, rest) = rest
@@ -5080,12 +5024,12 @@ end
 #= Same as map2, but stops when it find a certain element as indicated by the
 mapping function. Returns the new list, and whether the element was found or
 not. =#
-function findMap2(inList::List{T}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {T, ArgT1, ArgT2, F<:Function}
+function findMap2(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2) where {ArgT1, ArgT2, F<:Function}
   local outFound::Bool = false
-  local outList::List{T} = nil
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest) && ! outFound
     @match _cons(e, rest) = rest
@@ -5099,12 +5043,12 @@ end
 #= Same as map3, but stops when it find a certain element as indicated by the
 mapping function. Returns the new list, and whether the element was found or
 not. =#
-function findMap3(inList::List{T}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {T, ArgT1, ArgT2, ArgT3, F<:Function}
+function findMap3(inList::List, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inArg3::ArgT3) where {ArgT1, ArgT2, ArgT3, F<:Function}
   local outFound::Bool = false
-  local outList::List{T} = nil
+  local outList::List = nil
 
-  local e::T
-  local rest::List{T} = inList
+  local e
+  local rest::List = inList
 
   while ! listEmpty(rest) && ! outFound
     @match _cons(e, rest) = rest
@@ -5116,11 +5060,11 @@ function findMap3(inList::List{T}, inFunc::F, inArg1::ArgT1, inArg2::ArgT2, inAr
 end
 
 """ Applies the given function over the list and returns first returned value that is not NONE(). """
-function findSome(inList::List{T1}, inFunc::F) where {T1, F<:Function}
+function findSome(inList::List, inFunc::F) where {F<:Function}
   local outVal
   local retOpt::Option = NONE()
-  local e::T1
-  local rest::List{T1} = inList
+  local e
+  local rest::List = inList
   while isNone(retOpt)
     @match _cons(e, rest) = rest
     retOpt = inFunc(e)
@@ -5137,11 +5081,11 @@ function findSome(inList::List{T1}, inFunc::F) where {T1, F<:Function}
 end
 
 """ Applies the given function with one extra argument over the list and returns first returned value that is not NONE(). """
-function findSome1(inList::List{T1}, inFunc::F, inArg::Arg) where {T1, Arg, F<:Function}
+function findSome1(inList::List, inFunc::F, inArg::Arg) where {Arg, F<:Function}
   local outVal
   local retOpt = NONE()
-  local e::T1
-  local rest::List{T1} = inList
+  local e
+  local rest::List = inList
   while isNone(retOpt)
     @match _cons(e, rest) = rest
     retOpt = inFunc(e, inArg)
@@ -5157,14 +5101,14 @@ function findSome1(inList::List{T1}, inFunc::F, inArg::Arg) where {T1, Arg, F<:F
   outVal
 end
 
-function splitEqualPrefix(inFullList::List{T1}, inPrefixList::List{T2}, inEqFunc::F, inAccum::List{T1} = nil) where {T1, T2, F<:Function}
-  local outRest::List{T1}
-  local outPrefix::List{T1} = nil
+function splitEqualPrefix(inFullList::List, inPrefixList::List, inEqFunc::F, inAccum::List = nil) where {F<:Function}
+  local outRest::List
+  local outPrefix::List = nil
 
-  local e1::T1
-  local e2::T2
-  local rest_e1::List{T1} = inFullList
-  local rest_e2::List{T2} = inPrefixList
+  local e1
+  local e2
+  local rest_e1::List = inFullList
+  local rest_e2::List = inPrefixList
 
   while true
     if listEmpty(rest_e1) || listEmpty(rest_e2)
@@ -5242,12 +5186,12 @@ function combinationMap(inElements::List, inMapFunc::F) where {F<:Function}
   outElements
 end
 
-function combinationMap_tail(inElements::List, inMapFunc::F, inCombination::List{TI}, inAccumElems::List{TO}) where {TI, TO, F<:Function}
+function combinationMap_tail(inElements::List, inMapFunc::F, inCombination::List, inAccumElems::List) where {F<:Function}
   local outElements::List
 
   outElements = begin
-    local head::List{TI}
-    local rest::List{List{TI}}
+    local head::List
+    local rest::List{List}
     local acc::List
     @match inElements begin
       head <| rest  => begin
@@ -5283,12 +5227,12 @@ function combinationMap1(inElements::List, inMapFunc::F, inArg::ArgT1) where {Ar
   outElements
 end
 
-function combinationMap1_tail(inElements::List, inMapFunc::F, inArg::ArgT1, inCombination::List{TI}, inAccumElems::List{TO}) where {TI, TO, ArgT1, F<:Function}
+function combinationMap1_tail(inElements::List, inMapFunc::F, inArg::ArgT1, inCombination::List, inAccumElems::List) where {ArgT1, F<:Function}
   local outElements::List
 
   outElements = begin
-    local head::List{TI}
-    local rest::List{List{TI}}
+    local head::List
+    local rest::List{List}
     local acc::List
     @match inElements begin
       head <| rest  => begin
@@ -5307,13 +5251,13 @@ function combinationMap1_tail(inElements::List, inMapFunc::F, inArg::ArgT1, inCo
   outElements
 end
 
-function combinationMap1_tail2(inHead::List{TI}, inRest::List, inMapFunc::F, inArg::ArgT1, inCombination::List{TI}, inAccumElems::List{TO}) where {TI, TO, ArgT1, F<:Function}
+function combinationMap1_tail2(inHead::List, inRest::List, inMapFunc::F, inArg::ArgT1, inCombination::List, inAccumElems::List) where {ArgT1, F<:Function}
   local outElements::List
 
   outElements = begin
-    local head::TI
-    local rest::List{TI}
-    local comb::List{TI}
+    local head
+    local rest::List
+    local comb::List
     local accum::List
     @match (inHead, inCombination, inAccumElems) begin
       (head <| rest, comb, accum)  => begin
@@ -5362,12 +5306,12 @@ end
 #= Takes two lists and a comparison function and removes the heads from both
 lists as long as they are equal. Ex:
 removeEqualPrefix({1, 2, 3, 5, 7}, {1, 2, 3, 9, 7}) => ({5, 7}, {9, 7}) =#
-function removeEqualPrefix(inList1::List{T1}, inList2::List{T2}, inCompFunc::F) where {T1, T2, F<:Function}
-  local outList2::List{T2} = inList2
-  local outList1::List{T1} = inList1
+function removeEqualPrefix(inList1::List, inList2::List, inCompFunc::F) where {F<:Function}
+  local outList2::List = inList2
+  local outList1::List = inList1
 
-  local e1::T1
-  local e2::T2
+  local e1
+  local e2
 
   while ! (listEmpty(outList1) || listEmpty(outList2))
     e1 = listHead(outList1)
@@ -5382,15 +5326,15 @@ function removeEqualPrefix(inList1::List{T1}, inList2::List{T2}, inCompFunc::F) 
 end
 
 """ Returns true if inList1 is longer than inList2, otherwise false. """
-function listIsLonger(inList1::List{T}, inList2::List{T})  where {T}
+function listIsLonger(inList1::List, inList2::List)
   local isLonger::Bool
 
   isLonger = intGt(listLength(inList1), listLength(inList2))
   isLonger
 end
 
-function toListWithPositions(inList::List{T})  where {T}
-  local outList::List{Tuple{T, ModelicaInteger}} = nil
+function toListWithPositions(inList::List)
+  local outList::List{Tuple} = nil
 
   local pos::ModelicaInteger = 1
 
@@ -5405,8 +5349,8 @@ end
 #= @author: adrpo
 make NONE() if the list is empty
 make SOME(list) if the list is not empty =#
-function mkOption(inList::List{T})  where {T}
-  local outOption::Option{List{T}}
+function mkOption(inList::List)
+  local outOption::Option{List}
 
   outOption = if listEmpty(inList)
     NONE()
@@ -5418,7 +5362,7 @@ end
 
 #= Returns true if the given predicate function returns true for all elements in
 the given list. =#
-function all(inList::List{T}, inFunc::F) where {T, F<:Function}
+function all(inList::List, inFunc::F) where {F<:Function}
   local outResult::Bool
 
   for e in inList
@@ -5433,7 +5377,7 @@ end
 
 #= Returns true if the given predicate function returns true for any element in
 the given list. =#
-function any(inList::List{T}, inFunc::F) where {T, F<:Function}
+function any(inList::List, inFunc::F) where {F<:Function}
   local outResult::Bool = false
 
   for e in inList
@@ -5447,9 +5391,9 @@ end
 
 #= Takes a list of values and a filter function over the values and returns 2
 sub lists of values for which the matching function returns true and false. =#
-function separateOnTrue(inList::List{T}, inFilterFunc::F) where {T, F<:Function}
-  local outListFalse::List{T} = nil
-  local outListTrue::List{T} = nil
+function separateOnTrue(inList::List, inFilterFunc::F) where {F<:Function}
+  local outListFalse::List = nil
+  local outListTrue::List = nil
 
   for e in inList
     if inFilterFunc(e)
@@ -5463,9 +5407,9 @@ end
 
 #= Takes a list of values and a filter function over the values and returns 2
 sub lists of values for which the matching function returns true and false. =#
-function separate1OnTrue(inList::List{T}, inFilterFunc::F, inArg1::ArgT1) where {T, ArgT1, F<:Function}
-  local outListFalse::List{T} = nil
-  local outListTrue::List{T} = nil
+function separate1OnTrue(inList::List, inFilterFunc::F, inArg1::ArgT1) where {ArgT1, F<:Function}
+  local outListFalse::List = nil
+  local outListTrue::List = nil
 
   for e in inList
     if inFilterFunc(e, inArg1)
@@ -5477,7 +5421,7 @@ function separate1OnTrue(inList::List{T}, inFilterFunc::F, inArg1::ArgT1) where 
   (outListTrue, outListFalse)
 end
 
-function mapFirst(inList::List{TI}, inFunc::F) where {TI, F<:Function}
+function mapFirst(inList::List, inFunc::F) where {F<:Function}
   local outElement::Any
 
   local found::Bool
@@ -5492,11 +5436,11 @@ function mapFirst(inList::List{TI}, inFunc::F) where {TI, F<:Function}
   outElement
 end
 
-function isSorted(inList::List{T}, inFunc::F) where {T, F<:Function}
+function isSorted(inList::List, inFunc::F) where {F<:Function}
   local b::Bool = true
 
   local found::Bool
-  local prev::T
+  local prev
 
   if listEmpty(inList)
     return b
@@ -5513,7 +5457,7 @@ function isSorted(inList::List{T}, inFunc::F) where {T, F<:Function}
 end
 
 """ Applies a function to only the elements given by the sorted list of indices. """
-function mapIndices(inList::List{T}, indices::List{ModelicaInteger}, func::F) where {T, F<:Function}
+function mapIndices(inList::List, indices::List{ModelicaInteger}, func::F) where {F<:Function}
   # The mapped elements may be a different subtype than T (MetaModelica lists are
   # covariant); keep the result untyped.
   local outList::List
@@ -5521,8 +5465,8 @@ function mapIndices(inList::List{T}, indices::List{ModelicaInteger}, func::F) wh
   local i::ModelicaInteger = 1
   local idx::ModelicaInteger
   local rest_idx::List{ModelicaInteger}
-  local e::T
-  local rest_lst::List{T}
+  local e
+  local rest_lst::List
 
   if listEmpty(indices)
     outList = inList
