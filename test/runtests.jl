@@ -541,9 +541,16 @@ end
 end
 
 @testset "Misc" begin
+    # OMC: flatten keeps sub-list order; flattenReverse puts later sub-lists first.
     let l::List{List{Int}} = list(list(1, 2), list(3, 4), list(5))
-        @test listToVec(ListUtil.flattenReverse(l)) == [1, 2, 3, 4, 5]
+        @test listToVec(ListUtil.flatten(l)) == [1, 2, 3, 4, 5]
+        @test listToVec(ListUtil.flattenReverse(l)) == [5, 3, 4, 1, 2]
     end
+    let l::List{List{Int}} = list(list(), list(7, 8), list())
+        @test listToVec(ListUtil.flattenReverse(l)) == [7, 8]
+    end
+    @test listToVec(ListUtil.flattenReverse(list(list(1), list("a")))) == ["a", 1]
+    @test listEmpty(ListUtil.flattenReverse(nil))
 
     let l::List{List{Int}} = list(list(1, 2, 3), list(4, 5, 6))
         @test nestedToVec(ListUtil.transposeList(l)) == [[1, 4], [2, 5], [3, 6]]

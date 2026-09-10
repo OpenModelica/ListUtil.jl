@@ -3344,9 +3344,11 @@ function flattenReverse(::Cons{<:Nil})
   nil
 end
 
+# OMC List.flattenReverse is the reduction listAppend(lst for lst in inList):
+# later sub-lists come first, each keeping its own order.
 function flattenReverse(inList::List)
   local outList::List = nil
-  for lst in listReverse(inList)
+  for lst in inList
     outList = listAppend(lst, outList)
   end
   outList
@@ -3356,7 +3358,7 @@ end
 # elements are still lists at runtime.
 function flattenReverse(inList::Cons{Any})
   local outList::List = nil
-  for lst in listReverse(inList)
+  for lst in inList
     outList = listAppend(lst, outList)
   end
   outList
