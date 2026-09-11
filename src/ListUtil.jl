@@ -2333,13 +2333,15 @@ end
 #= Takes a list and a function that maps elements to lists, which are flattened
 into one list. Example (fill2(n) = {n, n}):
 mapFlat({1, 2, 3}, fill2) => {1, 1, 2, 2, 3, 3} =#
+# OMC's List.mapFlat is listReverse(mapFlatReverse(...)): the groups keep the
+# input order and each group's elements come out reversed.
 function mapFlat(inList::List, inMapFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   local outList::List = nil
 
-  for e in listReverse(inList)
+  for e in inList
     outList = listAppend(inMapFunc(e), outList)
   end
-  outList
+  listReverse(outList)
 end
 
 #= Takes a list and a function that maps elements to lists, which are flattened
