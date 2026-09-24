@@ -353,7 +353,9 @@ end
     let l::List{Option{Int}} = list(SOME(1), NONE(), SOME(3))
         @test listToVec(ListUtil.mapOption(l, x -> x * 10)) == [10, 30]
     end
-    @test listToVec(ListUtil.mapFlat(list(1, 2, 3), x -> list(x, -x))) == [1, -1, 2, -2, 3, -3]
+    # OMC's List.mapFlat is listReverse(mapFlatReverse(...)), so each mapped
+    # sublist comes out reversed: {1, 2, 3} -> {-1, 1, -2, 2, -3, 3}.
+    @test listToVec(ListUtil.mapFlat(list(1, 2, 3), x -> list(x, -x))) == [-1, 1, -2, 2, -3, 3]
     @test listToVec(ListUtil.mapFlatReverse(list(1, 2, 3), x -> list(x, -x))) ==
           [3, -3, 2, -2, 1, -1]
 
