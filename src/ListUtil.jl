@@ -4507,7 +4507,7 @@ function findAndRemove(inList::List, inFunc::F) where {F<:Function}
   for e in inList
     if inFunc(e)
       outElement = e
-      delst = DoubleEnded.MutableList()
+      delst = DoubleEnded.MutableList{eltype(inList)}()
       rest = inList
       for i in 1:i
         @match _cons(t, rest) = rest
@@ -4536,7 +4536,7 @@ function findAndRemove1(inList::List, inFunc::F, arg1::ArgT1) where {ArgT1, F<:F
   for e in inList
     if inFunc(e, arg1)
       outElement = e
-      delst = DoubleEnded.MutableList()
+      delst = DoubleEnded.MutableList{eltype(inList)}()
       rest = inList
       for i in 1:i
         @match _cons(t, rest) = rest
