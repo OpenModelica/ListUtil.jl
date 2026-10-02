@@ -353,7 +353,9 @@ end
     let l::List{Option{Int}} = list(SOME(1), NONE(), SOME(3))
         @test listToVec(ListUtil.mapOption(l, x -> x * 10)) == [10, 30]
     end
-    @test listToVec(ListUtil.mapFlat(list(1, 2, 3), x -> list(x, -x))) == [1, -1, 2, -2, 3, -3]
+    # OMC's List.mapFlat is listReverse(mapFlatReverse(...)), so each mapped
+    # sublist comes out reversed: {1, 2, 3} -> {-1, 1, -2, 2, -3, 3}.
+    @test listToVec(ListUtil.mapFlat(list(1, 2, 3), x -> list(x, -x))) == [-1, 1, -2, 2, -3, 3]
     @test listToVec(ListUtil.mapFlatReverse(list(1, 2, 3), x -> list(x, -x))) ==
           [3, -3, 2, -2, 1, -1]
 
@@ -541,9 +543,16 @@ end
 end
 
 @testset "Misc" begin
+    # OMC: flatten keeps sub-list order; flattenReverse puts later sub-lists first.
     let l::List{List{Int}} = list(list(1, 2), list(3, 4), list(5))
-        @test listToVec(ListUtil.flattenReverse(l)) == [1, 2, 3, 4, 5]
+        @test listToVec(ListUtil.flatten(l)) == [1, 2, 3, 4, 5]
+        @test listToVec(ListUtil.flattenReverse(l)) == [5, 3, 4, 1, 2]
     end
+    let l::List{List{Int}} = list(list(), list(7, 8), list())
+        @test listToVec(ListUtil.flattenReverse(l)) == [7, 8]
+    end
+    @test listToVec(ListUtil.flattenReverse(list(list(1), list("a")))) == ["a", 1]
+    @test listEmpty(ListUtil.flattenReverse(nil))
 
     let l::List{List{Int}} = list(list(1, 2, 3), list(4, 5, 6))
         @test nestedToVec(ListUtil.transposeList(l)) == [[1, 4], [2, 5], [3, 6]]

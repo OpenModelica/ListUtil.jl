@@ -1,7 +1,7 @@
 name = "ListUtil"
 uuid = "b2a72b7e-c1ef-11e9-3a87-6ddc5900c366"
 authors = ["johti <johti17@liu.se>"]
-version = "0.3.0"
+version = "0.4.1"
 
 [deps]
 ArrayUtil = "53cd29f2-c28d-11e9-1567-bd5452eeb1a0"
@@ -11,7 +11,11 @@ ImmutableList = "4a558cac-c1ed-11e9-20da-3584bcd8709a"
 MetaModelica = "9d7f2a79-07b5-5542-8b19-c0100dda6b06"
 
 [compat]
-julia = "1.12"
+julia = "1.13"
+ArrayUtil = "0.3.2"
+DoubleEnded = "0.2.3"
+ImmutableList = "0.4.2"
+MetaModelica = "0.4.2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
