@@ -36,7 +36,6 @@ using ExportAll
 import ArrayUtil
 using MetaModelica.Dangerous: listReverseInPlace, arrayGetNoBoundsChecking, arrayUpdateNoBoundsChecking, arrayCreateNoInit
 import MetaModelica.Dangerous
-import DoubleEnded
 import ImmutableList
 
 const TO = Any
@@ -1841,47 +1840,58 @@ function map(inList::List, inFunc::F, ::Type{TO} = Any) where {TO, F<:Function}
   outList
 end
 
-#= Takes a list and a function, and creates a new list by applying the function
-to each element of the list. =#
-function mapCheckReferenceEq(inList::List, inFunc::F) where {F<:Function}
-  local outList::List
+"""
+    mapCheckReferenceEq(inList, inFunc) -> List
 
+`inFunc` applied to each element of `inList`. `inList` itself, without allocating, when every result is the
+element it came from (`referenceEq`); otherwise a new list.
+"""
+function mapCheckReferenceEq(inList::List{T}, inFunc::F)::List{T} where {T, F<:Function}
+  local vals::Vector{T} = T[]
+  local nEq::Int = 0
   local allEq::Bool = true
-  local delst::DoubleEnded.MutableList
-  local n::ModelicaInteger = 0
-  local e1
-
-  for e in inList
-    e1 = inFunc(e)
-    if if allEq
-      ! referenceEq(e, e1)
-    else
-      false
-    end
-      allEq = false
-      delst = DoubleEnded.empty(e1)
-      for elt in inList
-        if n < 1
-          break
-        end
-        DoubleEnded.push_back(delst, elt)
-        n = n - 1
-      end
-    end
+  for e::T in inList
+    local e1::T = inFunc(e)
     if allEq
-      n = n + 1
-    else
-      DoubleEnded.push_back(delst, e1)
+      if referenceEq(e, e1)
+        nEq += 1
+        continue
+      end
+      allEq = false
+      _pushFirst!(vals, inList, nEq)
     end
+    push!(vals, e1)
   end
-  #=  Preserve reference equality without any allocation if nothing changed
-  =#
-  outList = if allEq
-    inList
-  else
-    DoubleEnded.toListAndClear(delst)
+  return allEq ? inList : arrayList(vals)
+end
+
+"""
+    _pushFirst!(vals, lst, n) -> vals
+
+Pushes the first `n` elements of `lst` onto `vals`.
+"""
+function _pushFirst!(vals::Vector{T}, lst::List{T}, n::Int)::Vector{T} where {T}
+  local k::Int = 0
+  for e::T in lst
+    k == n && break
+    push!(vals, e)
+    k += 1
   end
-  outList
+  return vals
+end
+
+"""
+    _prependFirst(lst, n, tail) -> List
+
+The first `n` elements of `lst`, in order, in front of `tail`: `n` new cells, `tail` shared.
+"""
+function _prependFirst(lst::List{T}, n::Int, tail::List{T})::List{T} where {T}
+  local prefix::Vector{T} = _pushFirst!(sizehint!(T[], n), lst, n)
+  local out::List{T} = tail
+  for i::Int in length(prefix):-1:1
+    out = Cons{T}(prefix[i], out)
+  end
+  return out
 end
 
 #= Takes a list and a function, and creates a new list by applying the function
@@ -3108,47 +3118,33 @@ function map2Fold(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2
   (outList, outArg)
 end
 
-#= Takes a list, two extra constant arguments, an extra argument, and a function.
-The function will be applied to each element in the list, and the extra
-argument will be passed to the function and updated. =#
-function map2FoldCheckReferenceEq(inList::List, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT) where {FT, ArgT1, ArgT2, F<:Function}
+"""
+    map2FoldCheckReferenceEq(inList, inFunc, inConstArg, inConstArg2, inArg) -> (List, arg)
+
+`inFunc(e, inConstArg, inConstArg2, arg) -> (e1, arg)` applied to each element, the argument passed on.
+The list is `inList` itself, without allocating, when every `e1` is the element it came from
+(`referenceEq`); otherwise a new list.
+"""
+function map2FoldCheckReferenceEq(inList::List{T}, inFunc::F, inConstArg::ArgT1, inConstArg2::ArgT2, inArg::FT) where {T, FT, ArgT1, ArgT2, F<:Function}
+  #= the fold argument: its type is inFunc's to decide =#
   local outArg = inArg
-  local outList::List
-
-  local res
+  local vals::Vector{T} = T[]
+  local nEq::Int = 0
   local allEq::Bool = true
-  local delst::DoubleEnded.MutableList{TIO}
-  local n::ModelicaInteger = 0
-
-  for e in inList
+  for e::T in inList
+    local res::T
     (res, outArg) = inFunc(e, inConstArg, inConstArg2, outArg)
-    if if allEq
-      ! referenceEq(e, res)
-    else
-      false
-    end
-      allEq = false
-      delst = DoubleEnded.empty(res)
-      for elt in inList
-        if n < 1
-          break
-        end
-        DoubleEnded.push_back(delst, elt)
-        n = n - 1
-      end
-    end
     if allEq
-      n = n + 1
-    else
-      DoubleEnded.push_back(delst, res)
+      if referenceEq(e, res)
+        nEq += 1
+        continue
+      end
+      allEq = false
+      _pushFirst!(vals, inList, nEq)
     end
+    push!(vals, res)
   end
-  outList = if allEq
-    inList
-  else
-    DoubleEnded.toListAndClear(delst)
-  end
-  (outList, outArg)
+  return (allEq ? inList : arrayList(vals), outArg)
 end
 
 #= Takes a list, three extra constant arguments, an extra argument, and a function.
@@ -4494,62 +4490,42 @@ function find1(inList::List, inFunc::F, arg1::ArgT1) where {ArgT1, F<:Function}
   outElement
 end
 
-#= This function retrieves the first element of a list for which the passed
-function evaluates to true. And returns the list with the element removed. =#
-function findAndRemove(inList::List, inFunc::F) where {F<:Function}
-  local rest::List
-  local outElement
+"""
+    findAndRemove(inList, inFunc) -> (element, List)
 
-  local i::ModelicaInteger = 0
-  local delst::DoubleEnded.MutableList
-  local t
-
-  for e in inList
+The first element for which `inFunc` is true and the list without it; fails if there is none.
+"""
+function findAndRemove(inList::List{T}, inFunc::F)::Tuple{T, List{T}} where {T, F<:Function}
+  local rest::List{T} = inList
+  local i::Int = 0
+  while !listEmpty(rest)
+    local e::T = listHead(rest)
     if inFunc(e)
-      outElement = e
-      delst = DoubleEnded.MutableList{eltype(inList)}()
-      rest = inList
-      for i in 1:i
-        @match _cons(t, rest) = rest
-        DoubleEnded.push_back(delst, t)
-      end
-      @match _cons(_, rest) = rest
-      rest = DoubleEnded.toListAndClear(delst, prependToList = rest)
-      return (outElement, rest)
+      return (e, _prependFirst(inList, i, listRest(rest)))
     end
-    i = i + 1
+    rest = listRest(rest)
+    i += 1
   end
   fail()
-  (outElement, rest)
 end
 
-#= This function retrieves the first element of a list for which the passed
-function evaluates to true. And returns the list with the element removed. =#
-function findAndRemove1(inList::List, inFunc::F, arg1::ArgT1) where {ArgT1, F<:Function}
-  local rest::List
-  local outElement
+"""
+    findAndRemove1(inList, inFunc, arg1) -> (element, List)
 
-  local i::ModelicaInteger = 0
-  local delst::DoubleEnded.MutableList
-  local t
-
-  for e in inList
+The first element for which `inFunc(e, arg1)` is true and the list without it; fails if there is none.
+"""
+function findAndRemove1(inList::List{T}, inFunc::F, arg1::ArgT1)::Tuple{T, List{T}} where {T, ArgT1, F<:Function}
+  local rest::List{T} = inList
+  local i::Int = 0
+  while !listEmpty(rest)
+    local e::T = listHead(rest)
     if inFunc(e, arg1)
-      outElement = e
-      delst = DoubleEnded.MutableList{eltype(inList)}()
-      rest = inList
-      for i in 1:i
-        @match _cons(t, rest) = rest
-        DoubleEnded.push_back(delst, t)
-      end
-      @match _cons(_, rest) = rest
-      rest = DoubleEnded.toListAndClear(delst, prependToList = rest)
-      return (outElement, rest)
+      return (e, _prependFirst(inList, i, listRest(rest)))
     end
-    i = i + 1
+    rest = listRest(rest)
+    i += 1
   end
   fail()
-  (outElement, rest)
 end
 
 #= This function returns the first value in the given list for which the
@@ -4677,30 +4653,21 @@ function removeMatchesFirst(inList::List{<:ModelicaInteger}, inN::ModelicaIntege
   outList
 end
 
-#= Takes an element, a position and a list, and replaces the value at the given
-position in the list. Position is an integer between 1 and n for a list of
-n elements.
-Example: replaceAt('A', 2, {'a', 'b', 'c'}) => {'a', 'A', 'c'} =#
-function replaceAt(inElement::T, inPosition::ModelicaInteger #= one-based index =#, inList::List{T})  where {T}
-  local outList::List{T}
+"""
+    replaceAt(inElement, inPosition, inList) -> List
 
-  local e::T
+`inList` with the element at the one-based `inPosition` (1 to n) replaced by `inElement`; the elements after
+it are shared. Example: `replaceAt('A', 2, {'a', 'b', 'c'}) => {'a', 'A', 'c'}`.
+"""
+function replaceAt(inElement::T, inPosition::ModelicaInteger #= one-based index =#, inList::List{T})::List{T} where {T}
   local rest::List{T} = inList
-  local delst::DoubleEnded.MutableList{T}
-
   @match true = inPosition >= 1
-  delst = DoubleEnded.MutableList{T}()
-  #=  Shuffle elements from inList to outList until the position is reached.
-  =#
-  for i in 1:inPosition - 1
-    @match _cons(e, rest) = rest
-    DoubleEnded.push_back(delst, e)
+  #= Skip the elements before the position, then the element replaced. =#
+  for i::Int in 1:inPosition - 1
+    @match _cons(_, rest) = rest
   end
-  #=  Replace the element at the position and append the remaining elements.
-  =#
   @match _cons(_, rest) = rest
-  outList = DoubleEnded.toListAndClear(delst, prependToList = _cons(inElement, rest))
-  outList
+  return _prependFirst(inList, inPosition - 1, Cons{T}(inElement, rest))
 end
 
 #= Applies the function to each element of the list until the function returns

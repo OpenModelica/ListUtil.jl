@@ -48,7 +48,7 @@ jobs:
 
       - name: Build
         # bash on every runner so we do not have to escape quotes for PowerShell.
-        # ArrayUtil, DoubleEnded, ImmutableList and MetaModelica live in the
+        # ArrayUtil, ImmutableList and MetaModelica live in the
         # OpenModelicaRegistry, not the General registry, so we register it
         # before resolving.
         shell: bash

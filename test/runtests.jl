@@ -634,3 +634,30 @@ end
     @test listToVec(ListUtil.generate(3, countdown)) == [3, 2, 1]
     @test listToVec(ListUtil.generateReverse(3, countdown)) == [1, 2, 3]
 end
+
+#= The functions that built their result with DoubleEnded: the unchanged list is returned as it is, a
+   changed one keeps the order (map2FoldCheckReferenceEq threw for a changed element before). =#
+@testset "Reference-preserving map, remove, replace" begin
+    local l = list(1, 2, 3)
+    @test ListUtil.mapCheckReferenceEq(l, identity) === l
+    @test listToVec(ListUtil.mapCheckReferenceEq(l, x -> x == 2 ? 20 : x)) == [1, 20, 3]
+    @test listToVec(ListUtil.mapCheckReferenceEq(l, x -> x == 1 ? 10 : x)) == [10, 2, 3]
+    @test ListUtil.mapCheckReferenceEq(list(), identity) === list()
+    local step = (e, a, b, s) -> (e == 3 ? e * a : e, s + e + b)
+    local (r, acc) = ListUtil.map2FoldCheckReferenceEq(l, step, 10, 1, 0)
+    @test listToVec(r) == [1, 2, 30] && acc == 9
+    local (same, n) = ListUtil.map2FoldCheckReferenceEq(l, (e, a, b, s) -> (e, s + 1), 0, 0, 0)
+    @test same === l && n == 3
+    local (e, rest) = ListUtil.findAndRemove(list(1, 2, 3, 4), x -> x == 3)
+    @test e == 3 && listToVec(rest) == [1, 2, 4]
+    local (e1, rest1) = ListUtil.findAndRemove1(list(1, 2, 3), (x, a) -> x == a, 1)
+    @test e1 == 1 && listToVec(rest1) == [2, 3]
+    @test_throws Exception ListUtil.findAndRemove(list(1, 2), x -> x > 5)
+    @test listToVec(ListUtil.replaceAt(9, 1, l)) == [9, 2, 3]
+    @test listToVec(ListUtil.replaceAt(9, 2, l)) == [1, 9, 3]
+    @test listToVec(ListUtil.replaceAt(9, 3, l)) == [1, 2, 9]
+    @test_throws Exception ListUtil.replaceAt(9, 4, l)
+    #= an abstract element type stays the list's =#
+    local nums = Cons{Real}(1, Cons{Real}(2.5, nil))
+    @test eltype(ListUtil.mapCheckReferenceEq(nums, x -> x == 1 ? 1.0 : x)) == Real
+end
